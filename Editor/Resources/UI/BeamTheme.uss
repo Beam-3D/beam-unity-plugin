@@ -1,0 +1,392 @@
+/* DEFAULT & SHARED UI STYLES */
+.light-bg {
+  background-color: transparent;
+}
+
+.dark-bg {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.beam-main-view {
+  padding: 20px;
+}
+
+.beam-content-grow {
+  flex-grow: 1;
+}
+
+.beam-content-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.beam-loader{
+    height: 200px;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.beam-main-view .unity-button {
+  height: 35px;
+  font-size: 15px;
+  -unity-text-align: middle-center;
+  -unity-font-style: normal;
+}
+
+.beam-input {
+  height: 35px;
+  border-color: rgba(0, 0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.05);
+  font-size: 15px;
+}
+
+.beam-center-text {
+  -unity-text-align: middle-center;
+}
+
+.beam-header {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.beam-header-center {
+  font-size: 15px;
+  -unity-text-align: middle-center;
+}
+
+.beam-section {
+  margin-bottom: 5px;
+}
+
+.beam-tab-control {
+  height: 35px;
+  flex-direction: row;
+  margin-left: -20px;
+  margin-right: -20px;
+}
+
+.beam-tab-button {
+  background-image: resource('Images/beam_plain_bg');
+  height: 35px;
+  flex-grow: 1;
+  -unity-background-image-tint-color: rgba(0, 0, 0, 0.2);
+  border-width: 0;
+  border-right-width: 1px;
+  border-color: #808080;
+  border-radius: 0;
+  margin: 0;
+}
+
+.beam-tab-button-selected {
+  -unity-background-image-tint-color: rgba(255, 255, 255, 0.4);
+  color: #000;
+}
+
+.beam-tab-button-selected:active {
+  -unity-background-image-tint-color: rgba(255, 255, 255, 0.4);
+  color: #000;
+}
+
+.beam-settings-button {
+  background-image: none;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+
+.beam-settings-button .unity-base-popup-field {
+  height: 100%;
+  width: 100%;
+}
+
+.beam-settings-button .unity-base-popup-field__arrow {
+  height: 0;
+  width: 0;
+  background-image: none;
+}
+
+.beam-settings-button .unity-base-popup-field__input {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+
+.beam-settings-button .unity-text-element {
+  background-image: resource('Images/beam_icon_cog');
+  -unity-background-scale-mode: scale-to-fit;
+  color: transparent;
+}
+
+/* LOGIN UI */
+.beam-main-view .unity-label {
+}
+
+.beam-logo-wrapper {
+  align-items: center;
+  background-image: resource('Images/placeholder');
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-top: -20px;
+  margin-bottom: 30px;
+}
+
+.beam-logo {
+  height: 200px;
+  width: 200px;
+}
+
+.beam-environment-label {
+  bottom: 0px;
+  font-size: 12px;
+}
+
+/* PROJECT UI */
+
+.beam-project-scroller {
+  height: 400px;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-top: 40px;
+}
+.beam-project-item {
+  padding: 10px 20px;
+  font-size: 15px;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+
+.beam-project-item .unity-button {
+  width: 175px;
+}
+
+.beam-project-header-wrapper {
+  padding: 20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-top: -20px;
+  background-image: resource('Images/placeholder');
+  flex-direction: row;
+  align-items: center;
+}
+
+.beam-project-header-wrapper .unity-button {
+  width: 175px;
+}
+
+.beam-project-header-wrapper .unity-label {
+  color: white;
+}
+
+.beam-project-header-wrapper .beam-logo {
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
+}
+
+.beam-project-header-content {
+  flex-grow: 1;
+  padding-right: 45px;
+}
+
+.beam-project-header-content .unity-label {
+  white-space: normal;
+}
+
+/* SCENE SELECTION UI */
+.beam-scene-selector-wrapper {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.beam-scene-selector-wrapper .unity-popup-field {
+  width: 175px;
+  height: 35px;
+}
+
+.beam-scene-selector-wrapper .unity-popup-field .unity-text-element {
+  font-size: 15px;
+}
+
+.beam-scene-units {
+  height: 100%;
+}
+
+.beam-units-scroller {
+  height: 100%;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-bottom: -20px;
+  padding-bottom: 20px;
+}
+
+/* UNIT UI */
+.beam-unit-list {
+  flex-grow: 1;
+  padding-top: 5px;
+}
+
+.beam-unit {
+  flex-direction: column;
+  padding-top: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.beam-unit-tag {
+  border-radius: 15px;
+  background-image: resource('Images/beam_plain_bg');
+  -unity-background-image-tint-color: rgba(255, 255, 255, 0.6);
+  align-self: flex-start;
+  padding: 4px 10px;
+  font-size: 10px;
+  margin-right: 5px;
+}
+
+.beam-unit-header {
+  flex-direction: row;
+  padding-bottom: 15px;
+}
+
+.beam-unit-info {
+  flex-grow: 1;
+  font-size: 15px;
+  padding-right: 45px;
+}
+
+.beam-unit-info .unity-label {
+  white-space: normal;
+  max-height: 45px;
+  overflow: hidden;
+}
+
+.beam-unit-kind-image {
+  height: 48px;
+  width: 48px;
+  margin-right: 10px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.beam-unit-instance {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0 -20px;
+  padding: 5px 20px;
+}
+
+.beam-unit-instance .unity-button {
+  height: 30px;
+  width: 100px;
+}
+
+.beam-unit-instance-label {
+  flex-grow: 1;
+  padding-left: 10px;
+}
+
+.beam-unit-placed-image {
+  height: 16px;
+  width: 16px;
+}
+
+.beam-no-data-label {
+  font-size: 18px;
+  -unity-text-align: middle-center;
+  padding: 30px;
+  white-space: normal;
+}
+
+.beam-centered-button {
+  margin-bottom: 50px;
+  width: 200px;
+  align-self: center;
+}
+
+.beam-error-wrapper {
+  -unity-text-align: middle-center;
+}
+
+.beam-error-wrapper .beam-header {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.beam-error-body {
+  margin-bottom: 20px;
+  -unity-text-align: middle-center;
+}
+
+.beam-small-text {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 5px;
+}
+
+.beam-quality-controls {
+  flex-shrink: 0;
+}
+
+.beam-quality-controls .unity-label {
+  margin-bottom: 5px;
+}
+
+.quality-dd-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 150px;
+  align-self: flex-start;
+}
+
+.quality-dd-wrapper .unity-label {
+  width: 35px;
+}
+
+.beam-quality-dropdowns {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 10px;
+}
+
+.beam-quality-dropdowns .unity-popup-field {
+  width: 75px;
+}
+
+.beam-fulfillment-mode {
+  flex-shrink: 0;
+}
+
+.beam-fulfillment-mode .unity-enum-field__input {
+  width: 100px;
+}
+
+.beam-fulfillment-mode .unity-base-field .unity-label {
+  width: 50px;
+  min-width: 0;
+}
+
+/* Upload Scene UI */
+.beam-toggle .unity-label {
+  min-width: 175px;
+}
+
+.beam-help-text {
+  margin: 1px 3px 6px 3px;
+}
+.beam-fulfillment-mode .unity-base-field .unity-label{
+    width: 50px;
+    min-width: 0;
+}
+
+.beam-unit-header-ratio-label{
+    -unity-text-align: middle-center;
+    width: 48px;
+    padding-top: 3px;
+}

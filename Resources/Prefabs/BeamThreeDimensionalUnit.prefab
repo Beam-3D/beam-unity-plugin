@@ -1,0 +1,210 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4967191268055741741
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4967191268055741737}
+  - component: {fileID: 6281052558863034470}
+  - component: {fileID: -3730130789272928107}
+  - component: {fileID: 5496753168833052328}
+  - component: {fileID: 1729268041857434253}
+  - component: {fileID: -5105952294403134763}
+  m_Layer: 0
+  m_Name: BeamThreeDimensionalUnit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4967191268055741737
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6281052558863034470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e345499216885a942a4e66184a4ec215, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ProjectUnit:
+    MinQualityId: 
+    MaxQualityId: 
+    Kind: 0
+    Unit:
+      ScreenshotUploadId: 
+      Id: 
+      TenantId: 
+      SceneId: 
+      Name: 
+      Description: 
+      Metadata: {fileID: 0}
+      IsLive: 0
+      Instances: []
+    ImageMetadata:
+      AspectRatioId: 
+    VideoMetadata:
+      AspectRatioId: 
+      MaxLengthInSeconds: 0
+      Mutable: 0
+    AudioMetadata:
+      MaxLengthInSeconds: 0
+    ThreeDimensionalMetadata:
+      Movable: 0
+    FulfillmentBehaviour: 0
+    FulfillmentRange: 0
+    LodDistance: 0
+    FulfilledSinceAwake: 0
+    LastFulfillmentChecksum: 
+  UnitInstance:
+    ScreenshotUploadId: 
+    Id: 
+    TenantId: 
+    UnitId: 
+    Name: 
+    Description: 
+  OnLodStatusChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFulfillmentUpdated:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-3730130789272928107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d06a3a0cde6a4aeeb3a456d762d5b737, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnThreeDimensionalUnitLoaded:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5496753168833052328}
+        m_MethodName: Resize
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  Placeholder: {fileID: 0}
+--- !u!114 &5496753168833052328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385f934abc71d8a408a4c77ab8f7062a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnResizeCompleted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1729268041857434253}
+        m_MethodName: GenerateColliders
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  TargetScale: 1
+  BaseAtXZPlane: 0
+  PivotAtBase: 0
+  ResizeOnStart: 0
+  Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+--- !u!114 &1729268041857434253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91486c28349133940a01dfa28ca5cec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GenerateOnAwake: 0
+  AddRigidBody: 0
+  ColliderType: 0
+--- !u!114 &-5105952294403134763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4967191268055741741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 778b02cb06e226f44aa2c3a0da16bf01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CustomMetadataHandlers:
+  - Name: BeamCaseNote
+    Id: 028b32a2-5f79-4b8c-b134-bfbbe35e3e4e
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  - Name: BeamCaseNoteActualCorrect
+    Id: 7729cf64-437d-4777-96fe-461928f11978
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  - Name: BeamCaseNoteCorrect
+    Id: 1f468f4b-0576-4a64-91a1-fd4cfc8d52d2
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  - Name: Image-Aria-Label
+    Id: 72b5eedf-df60-47d2-88fe-e62e6da24b7f
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  - Name: Test Number Key
+    Id: cb06117d-4bb5-47e9-ac20-1884b2955e5d
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  - Name: URL
+    Id: 1e6cc4ee-e4f3-4409-b671-bc7c0aea1dc1
+    OnMetadataReceived:
+      m_PersistentCalls:
+        m_Calls: []
+  ReceivedMetadata: []

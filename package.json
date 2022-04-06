@@ -1,0 +1,22 @@
+{
+  "name": "com.beam.unity",
+  "version": "0.0.0",
+  "displayName": "Beam for Unity",
+  "description": "You will also need to add GLTFFast v4.6.0 via the instructions here https://github.com/atteneder/glTFast#installing",
+  "unity": "2019.4",
+  "documentationUrl": "https://beam3d.app/",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "2.0.2",
+    "com.unity.mathematics": "1.2.5"
+  },
+  "keywords": [
+    "beam",
+    "streaming",
+    "cms"
+  ],
+  "author": {
+    "name": "Beam",
+    "email": "adam@beam3d.app",
+    "url": "https://www.beam3d.app"
+  }
+}

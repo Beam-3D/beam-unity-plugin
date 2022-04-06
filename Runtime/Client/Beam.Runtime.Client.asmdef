@@ -1,0 +1,18 @@
+{
+    "name": "Beam.Runtime.Client",
+    "references": [
+        "GUID:d712709a8b8bfa24b9fddf30888c694a",
+        "GUID:a42927d1d4a3b4cda9b076a7adecb9cc",
+        "GUID:18d18f811ba286c49814567a3cfba688",
+        "GUID:d0be37b4ced5cc04faf4d217fe5a14ec"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

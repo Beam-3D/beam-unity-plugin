@@ -1,0 +1,20 @@
+{
+    "name": "Beam.Editor",
+    "references": [
+        "GUID:18d18f811ba286c49814567a3cfba688",
+        "GUID:d712709a8b8bfa24b9fddf30888c694a",
+        "GUID:a9de4131fb84dad4c8565c26ccc0a3cd",
+        "GUID:564a24821659eb8428849b73669eb199"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
