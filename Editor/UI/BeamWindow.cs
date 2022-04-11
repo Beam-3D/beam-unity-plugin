@@ -23,8 +23,6 @@ namespace Beam.Editor.UI
   public class BeamWindow : EditorWindowSingleton<BeamWindow>, IBeamWindow
   {
     public BeamAreaBoundsManager AreaBoundsManager;
-    public BeamData BeamData;
-    public BeamRuntimeData BeamRuntimeData;
     public PlayModeStateChange PlayModeState;
 
     [MenuItem("Beam/Dashboard")]
@@ -36,8 +34,6 @@ namespace Beam.Editor.UI
     private void Init()
     {
       BeamManagerHandler.CheckForManagers(true);
-      this.BeamData = BeamClient.Data;
-      this.BeamRuntimeData = BeamClient.RuntimeData;
       this.RelinkManagers();
     }
 
@@ -76,9 +72,9 @@ namespace Beam.Editor.UI
         return;
       }
 
-      if (!string.IsNullOrEmpty(this.BeamRuntimeData.Environment))
+      if (!string.IsNullOrEmpty(BeamClient.RuntimeData.Environment))
       {
-        Endpoint.Environment = this.BeamRuntimeData.Environment;
+        Endpoint.Environment = BeamClient.RuntimeData.Environment;
 
         // Check to see if the environment is still available.
         if (string.IsNullOrEmpty(Endpoint.AvailableEnvironments.FirstOrDefault(x => x == Endpoint.Environment)))
@@ -88,7 +84,7 @@ namespace Beam.Editor.UI
       }
 
       this.AreaBoundsManager = FindObjectOfType<BeamAreaBoundsManager>();
-      this.titleContent.text = this.BeamData.WindowName;
+      this.titleContent.text = BeamClient.Data.WindowName;
 
       this.Render();
     }
@@ -141,24 +137,24 @@ namespace Beam.Editor.UI
       else
       {
         // Render authenticated UI
-        if (this.BeamData.ShowSettingsUI)
+        if (BeamClient.Data.ShowSettingsUI)
         {
           root.Add(new SettingsUI(this));
         }
-        else if (this.BeamData.ShowUploadSceneUI)
+        else if (BeamClient.Data.ShowUploadSceneUI)
         {
           root.Add(new UploadSceneUI(this));
         }
         else
         {
           // Check if a project is selected and that it's valid
-          if (!string.IsNullOrWhiteSpace(this.BeamRuntimeData.ProjectId) && this.BeamData.GetSelectedProject() != null)
+          if (!string.IsNullOrWhiteSpace(BeamClient.RuntimeData.ProjectId) && BeamClient.Data.GetSelectedProject() != null)
           {
             // Select scene
             root.Add(new ProjectScenesUI(this));
 
             // Select units
-            if (this.BeamData.Scenes != null && this.BeamData.Scenes.Any())
+            if (BeamClient.Data.Scenes != null && BeamClient.Data.Scenes.Any())
             {
               root.Add(new SceneUnitsUI(this));
             }
@@ -188,7 +184,7 @@ namespace Beam.Editor.UI
           Callback = () =>
           {
             // Should this be in BeamData?
-            this.BeamData.ShowSettingsUI = true;
+            BeamClient.Data.ShowSettingsUI = true;
             this.Render();
           }
         },
@@ -202,14 +198,14 @@ namespace Beam.Editor.UI
               // TODO: Move to Editor Data Manager
 
               await BeamEditorDataManager.GetBaseData(true);
-              if (!string.IsNullOrWhiteSpace(this.BeamData.GetSelectedProject()?.Id))
+              if (!string.IsNullOrWhiteSpace(BeamClient.Data.GetSelectedProject()?.Id))
               {
-                await BeamEditorDataManager.GetAreas(this.BeamData.GetSelectedProject().Id);
+                await BeamEditorDataManager.GetAreas(BeamClient.Data.GetSelectedProject().Id);
               }
 
-              if (!string.IsNullOrWhiteSpace(this.BeamData.GetSelectedScene()?.Id))
+              if (!string.IsNullOrWhiteSpace(BeamClient.Data.GetSelectedScene()?.Id))
               {
-                await BeamEditorDataManager.GetUnits(this.BeamData.GetSelectedScene()?.Id);
+                await BeamEditorDataManager.GetUnits(BeamClient.Data.GetSelectedScene()?.Id);
               }
 
               // TODO: Move out of BeamClient
@@ -225,7 +221,7 @@ namespace Beam.Editor.UI
               Debug.LogException(e);
             }
 
-            EditorUtility.SetDirty(this.BeamRuntimeData);
+            EditorUtility.SetDirty(BeamClient.RuntimeData);
             this.Render();
           }
         },
@@ -244,7 +240,7 @@ namespace Beam.Editor.UI
           Label = "Upload scene to web",
           Callback = () =>
           {
-            this.BeamData.ShowUploadSceneUI = true;
+            BeamClient.Data.ShowUploadSceneUI = true;
             this.Render();
           }
         },

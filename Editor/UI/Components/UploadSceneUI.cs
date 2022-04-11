@@ -1,5 +1,6 @@
 ﻿using Beam.Editor.Extensions;
 using Beam.Editor.Utilities;
+using Beam.Runtime.Client;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -62,7 +63,7 @@ namespace Beam.Editor.UI.Components
       {
         currentlyUploading = true;
         beamWindow.Render();
-        await SceneUploader.UploadScene(beamWindow.BeamData.GetSelectedScene()?.Id, uploadGeometry, uploadUnits);
+        await SceneUploader.UploadScene(BeamClient.Data.GetSelectedScene()?.Id, uploadGeometry, uploadUnits);
         currentlyUploading = false;
         beamWindow.Render();
       });
@@ -71,7 +72,7 @@ namespace Beam.Editor.UI.Components
 
       Button doneButton = new Button { text = "Done" }.WithClickHandler(() =>
       {
-        beamWindow.BeamData.ShowUploadSceneUI = false;
+        BeamClient.Data.ShowUploadSceneUI = false;
         beamWindow.Render();
       });
 

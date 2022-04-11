@@ -16,7 +16,6 @@ namespace Beam.Editor.UI.Components
     public LoginUI(BeamWindow beamWindow)
     {
       this.window = beamWindow;
-      //this.dataManager = beamWindow.DataManager;
       LoginRequest request = BeamEditorDataManager.LoginRequest;
       LoginResponse loginResponse = FileHelper.LoadLoginData();
 

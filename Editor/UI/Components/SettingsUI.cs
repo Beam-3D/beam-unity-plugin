@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Beam.Editor.Extensions;
+using Beam.Runtime.Client;
 using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEditor;
@@ -44,8 +45,8 @@ namespace Beam.Editor.UI.Components
 
     public SettingsUI(BeamWindow beamWindow)
     {
-      var data = beamWindow.BeamData;
-      var runtimeData = beamWindow.BeamRuntimeData;
+      var data = BeamClient.Data;
+      var runtimeData = BeamClient.RuntimeData;
 
       var session = data.MockSession;
       // SOURCE DATA

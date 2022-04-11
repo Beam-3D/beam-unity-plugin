@@ -111,7 +111,7 @@ namespace Beam.Editor.UI.Components
 
       ScrollView scrollView = new ScrollView();
       scrollView.AddToClassList("beam-units-scroller");
-      scrollView.viewDataKey = beamWindow.BeamData.GetSelectedScene()?.Id + beamWindow.BeamData.SelectedAssetKind;
+      scrollView.viewDataKey = BeamClient.Data.GetSelectedScene()?.Id + BeamClient.Data.SelectedAssetKind;
 
       VisualElement sceneUnitsList = new VisualElement();
       sceneUnitsList.AddToClassList("beam-unit-list");
@@ -127,7 +127,7 @@ namespace Beam.Editor.UI.Components
     private static VisualElement RenderHeader(BeamWindow window, AssetKind kind,
       ProjectUnit projectUnit, Texture2D icon)
     {
-      BeamData data = window.BeamData;
+      BeamData data = BeamClient.Data;
       // UNIT CONTAINER
       VisualElement unitWrapper = new VisualElement();
       unitWrapper.AddToClassList("beam-unit");
