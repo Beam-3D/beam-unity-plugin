@@ -26,7 +26,7 @@ namespace Beam.Runtime.Client.Utilities
       }
       else
       {
-        var renderAssetName = renderAsset.GetType().Name;
+        string renderAssetName = renderAsset.GetType().Name;
         if (renderAsset.GetType().Name.Contains("HDRenderPipelineAsset"))
         {
           return UnityRenderPipeline.HighDefRenderPipeline;

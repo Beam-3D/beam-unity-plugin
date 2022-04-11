@@ -6,20 +6,24 @@ namespace Beam.Editor.Editors
 {
   [CustomEditor(typeof(BeamModelResizer))]
   [CanEditMultipleObjects]
-  public class BeamModelResizerEditor: UnityEditor.Editor
+  public class BeamModelResizerEditor : UnityEditor.Editor
   {
     private SerializedProperty targetScale;
     private SerializedProperty snapToBase;
     private SerializedProperty pivotAtBase;
     private SerializedProperty resizeOnStart;
     private SerializedProperty onResizeCompleted;
-    
-    private void OnEnable()
+
+    private protected void OnEnable()
     {
-      this.targetScale = this.serializedObject.FindProperty("TargetScale");      
-      this.snapToBase = this.serializedObject.FindProperty("SnapToBase");       
-      this.pivotAtBase = this.serializedObject.FindProperty("PivotAtBase");      
-      this.resizeOnStart = this.serializedObject.FindProperty("ResizeOnStart");    
+      if (this.serializedObject == null)
+      {
+        return;
+      }
+      this.targetScale = this.serializedObject.FindProperty("TargetScale");
+      this.snapToBase = this.serializedObject.FindProperty("SnapToBase");
+      this.pivotAtBase = this.serializedObject.FindProperty("PivotAtBase");
+      this.resizeOnStart = this.serializedObject.FindProperty("ResizeOnStart");
       this.onResizeCompleted = this.serializedObject.FindProperty("OnResizeCompleted");
     }
 
@@ -37,7 +41,7 @@ namespace Beam.Editor.Editors
       GUI.enabled = true;
       EditorGUILayout.PropertyField(this.resizeOnStart, new GUIContent("Resize On Start"));
       EditorGUILayout.PropertyField(this.onResizeCompleted, new GUIContent("On Resize Completed"));
-      
+
       this.serializedObject.ApplyModifiedProperties();
     }
   }

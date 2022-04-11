@@ -28,6 +28,11 @@ namespace Beam.Editor.Editors
     {
       this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
 
+      if (this.target == null)
+      {
+        return;
+      }
+
       this.scriptInstance = (BeamUnitInstance)this.target;
       this.kind = this.scriptInstance.Kind;
 

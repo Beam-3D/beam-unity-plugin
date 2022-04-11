@@ -12,8 +12,9 @@ using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEditor;
 using UnityEngine;
-using UnityGLTF;
+using GLTFast.Export;
 using Object = UnityEngine.Object;
+using System.IO;
 
 namespace Beam.Editor.Utilities
 {
@@ -37,7 +38,7 @@ namespace Beam.Editor.Utilities
 
         if (uploadGeometry)
         {
-          byte[] exportedScene = GetActiveSceneAsGlb();
+          byte[] exportedScene = await GetActiveSceneAsGlb();
 
           if (exportedScene.Length != 0)
           {
@@ -100,7 +101,7 @@ namespace Beam.Editor.Utilities
       return await sceneApi.ProjectsScenesIdPatchAsync(sceneId, sceneUpdateBody);
     }
 
-    public static byte[] GetActiveSceneAsGlb()
+    public static async Task<byte[]> GetActiveSceneAsGlb()
     {
       UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
       GameObject[] rootGameObjects = scene.GetRootGameObjects();
@@ -120,17 +121,27 @@ namespace Beam.Editor.Utilities
         }
       }
 
-      Transform[] exportableTransforms = rootGameObjects.Where(go => go.activeInHierarchy).Select(go => go.transform).ToArray();
+      List<ReflectionProbe> probes = Object.FindObjectsOfType<ReflectionProbe>().ToList();
+      probes.ForEach(p => p.gameObject.SetActive(false));
 
-      ExportOptions exportOptions = new ExportOptions { TexturePathRetriever = RetrieveTexturePath };
+      GameObject[] exportableTransforms = rootGameObjects
+      .Where(go => go.activeInHierarchy)
+      .Select(go => go.gameObject).ToArray();
 
-      GLTFSceneExporter exporter = new GLTFSceneExporter(exportableTransforms, exportOptions);
-      byte[] exportedGlb = exporter.SaveGLBToByteArray(scene.name);
-      BeamLogger.LogInfo("Exporting Scene Geometry");
+      GameObjectExport export = new GameObjectExport(new ExportSettings
+      {
+        format = GltfFormat.Binary,
+        fileConflictResolution = FileConflictResolution.Overwrite
+      });
+      export.AddScene(exportableTransforms);
 
-      disabledObjects.ForEach(go => go.SetActive(true));
-
-      return exportedGlb;
+      using (MemoryStream ms = new MemoryStream())
+      {
+        await export.SaveToStreamAndDispose(ms);
+        disabledObjects.ForEach(go => go.SetActive(true));
+        probes.ForEach(p => p.gameObject.SetActive(true));
+        return ms.ToArray();
+      }
     }
 
     private static string RetrieveTexturePath(Texture texture)

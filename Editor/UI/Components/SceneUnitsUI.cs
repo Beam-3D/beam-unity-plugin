@@ -11,7 +11,6 @@ using Beam.Runtime.Sdk.Generated;
 using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Model;
 using Beam.Runtime.Sdk.Utilities;
-using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -112,6 +111,7 @@ namespace Beam.Editor.UI.Components
 
       ScrollView scrollView = new ScrollView();
       scrollView.AddToClassList("beam-units-scroller");
+      scrollView.viewDataKey = beamWindow.BeamData.GetSelectedScene()?.Id + beamWindow.BeamData.SelectedAssetKind;
 
       VisualElement sceneUnitsList = new VisualElement();
       sceneUnitsList.AddToClassList("beam-unit-list");
@@ -263,13 +263,12 @@ namespace Beam.Editor.UI.Components
       unitHeader.Add(fulfillmentMode);
 
       unitWrapper.Add(unitHeader);
-      unitWrapper.Add(RenderInstances(window, kind, projectUnit, data));
+      unitWrapper.Add(RenderInstances(kind, projectUnit));
 
       return unitWrapper;
     }
 
-    private static VisualElement RenderInstances(BeamWindow window, AssetKind kind,
-      ProjectUnit projectUnit, BeamData data)
+    private static VisualElement RenderInstances(AssetKind kind, ProjectUnit projectUnit)
     {
       VisualElement unitInstanceList = new VisualElement();
       unitInstanceList.AddToClassList("beam-unit-instance-list");

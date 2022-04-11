@@ -3,8 +3,9 @@
     "references": [
         "GUID:18d18f811ba286c49814567a3cfba688",
         "GUID:d712709a8b8bfa24b9fddf30888c694a",
-        "GUID:a9de4131fb84dad4c8565c26ccc0a3cd",
-        "GUID:564a24821659eb8428849b73669eb199"
+        "GUID:564a24821659eb8428849b73669eb199",
+        "GUID:a42927d1d4a3b4cda9b076a7adecb9cc",
+        "GUID:5e7ba8d6d26c84943b64dd07bd1c9510"
     ],
     "includePlatforms": [
         "Editor"
