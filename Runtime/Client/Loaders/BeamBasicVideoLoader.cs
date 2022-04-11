@@ -137,7 +137,7 @@ namespace Beam.Runtime.Client.Loaders
 
     private void SetupForRenderPipeline()
     {
-      UnityRenderPipeline pipeline = UtilDetermineRenderPipeline.getRenderSettings();
+      UnityRenderPipeline pipeline = UtilDetermineRenderPipeline.GetRenderSettings();
       switch (pipeline)
       {
         case UnityRenderPipeline.Legacy:
