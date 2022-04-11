@@ -81,7 +81,7 @@ namespace Beam.Editor.Utilities
             "}"
         };
 
-      System.IO.File.WriteAllLines($@"{Application.dataPath}/Beam/BeamUserTags.cs", lines);
+      System.IO.File.WriteAllLines($@"{Application.dataPath}/Resources/Beam/BeamUserTags.cs", lines);
     }
   }
 }
