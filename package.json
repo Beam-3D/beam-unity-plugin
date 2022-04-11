@@ -6,7 +6,7 @@
   "unity": "2019.4",
   "documentationUrl": "https://beam3d.app/",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "2.0.2",
+    "com.unity.nuget.newtonsoft-json": "3.0.2",
     "com.unity.mathematics": "1.2.5"
   },
   "keywords": [
