@@ -12,7 +12,7 @@ You will need to install glTFFast first in order to use the Beam plugin. You can
 
 ## Installation
 
-Simply add the repository from a Git URL via package manager using `git@github.com:Beam-3D/beam-unity-plugin.git`
+Simply add the repository from a Git URL via package manager using `https://github.com/Beam-3D/beam-unity-plugin.git`
 
 ## Usage
 
