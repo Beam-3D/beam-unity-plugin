@@ -5,6 +5,7 @@
     Started,
     CompletedEmpty,
     CompletedWithContent,
+    CompletedWithSameContent,
     Failed
   }
 }

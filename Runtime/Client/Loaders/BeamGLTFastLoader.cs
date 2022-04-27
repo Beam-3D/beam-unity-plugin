@@ -26,6 +26,8 @@ namespace Beam.Runtime.Client.Loaders
     private BeamThreeDimensionalUnitInstance beamThreeDimensionalUnitInstance;
     private GameObject currentPlaceholder;
     private readonly GltfAsset gLtfAsset;
+    private string lastLowQualityUrl;
+    private string lastHighQualityUrl;
     private GameObject highQualityInstance;
     private GameObject lowQualityInstance;
 
@@ -75,6 +77,22 @@ namespace Beam.Runtime.Client.Loaders
       {
         return;
       }
+      UnitFulfillmentStatusCode status = unitFulfillmentData.StatusCode;
+      if (status == UnitFulfillmentStatusCode.Started || status == UnitFulfillmentStatusCode.CompletedWithSameContent)
+      {
+        return;
+      }
+      if (status == UnitFulfillmentStatusCode.CompletedEmpty)
+      {
+        if (this.EmptyFulfillmentBehaviour == EmptyFulfillmentBehaviour.Hide)
+        {
+          this.transform.Clear();
+          this.lastLowQualityUrl = null;
+          this.lastHighQualityUrl = null;
+        }
+        return;
+      }
+
       this.transform.Clear();
 
       bool highQualityAvailable = !string.IsNullOrEmpty(unitFulfillmentData.HighQualityUrl);
@@ -102,6 +120,9 @@ namespace Beam.Runtime.Client.Loaders
         await this.LoadWithGltfFast(unitFulfillmentData.LowQualityUrl, LodStatus.OutsideHighQualityRange);
         await this.LoadWithGltfFast(unitFulfillmentData.HighQualityUrl, LodStatus.InsideHighQualityRange);
       }
+
+      this.lastHighQualityUrl = unitFulfillmentData.HighQualityUrl;
+      this.lastLowQualityUrl = unitFulfillmentData.LowQualityUrl;
     }
 
     private async Task LoadWithGltfFast(string uri, LodStatus quality)

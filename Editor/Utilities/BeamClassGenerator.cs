@@ -44,7 +44,7 @@ namespace Beam.Editor.Utilities
     {
       return name.Replace(@"""", @"\""");
     }
-    public static void GenerateUserTagsClass(List<Tag> tags)
+    public static void GenerateUserTagsClass(List<ITag> tags)
     {
       List<string> tagBody = new List<string>();
 

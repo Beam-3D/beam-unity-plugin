@@ -14,7 +14,7 @@ using Beam.Runtime.Sdk.Utilities;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using AspectRatio = Beam.Runtime.Sdk.Generated.Model.AspectRatio;
+using IAspectRatio = Beam.Runtime.Sdk.Generated.Model.IAspectRatio;
 using ProjectUnit = Beam.Runtime.Sdk.Model.ProjectUnit;
 
 namespace Beam.Editor.UI.Components
@@ -146,7 +146,7 @@ namespace Beam.Editor.UI.Components
       VisualElement unitInfo = new VisualElement();
       unitInfo.AddToClassList("beam-unit-info");
 
-      ProjectUnitWithInstancesResponse unit = projectUnit.Unit;
+      IProjectUnitWithInstances unit = projectUnit.Unit;
 
       List<BeamUnitInstance> placed = BeamEditorInstanceManager.GetInstancesByUnitId(unit.Id);
 
@@ -164,7 +164,7 @@ namespace Beam.Editor.UI.Components
 
       if (AspectRatioHelper.HasAspectRatio(kind))
       {
-        AspectRatio ratio = projectUnit.GetAspectRatioId(data);
+        IAspectRatio ratio = projectUnit.GetAspectRatioId(data);
         imageWrapper.Add(new Label(ratio?.Name ?? "Any").WithClass("beam-unit-header-ratio-label"));
       }
 
@@ -273,11 +273,11 @@ namespace Beam.Editor.UI.Components
       VisualElement unitInstanceList = new VisualElement();
       unitInstanceList.AddToClassList("beam-unit-instance-list");
 
-      ProjectUnitWithInstancesResponse unit = projectUnit.Unit;
+      IProjectUnitWithInstances unit = projectUnit.Unit;
 
       for (int i = 0; i < unit.Instances.Count(); i++)
       {
-        ProjectUnitInstance instance = unit.Instances[i];
+        IProjectUnitInstance instance = unit.Instances[i];
 
         bool isPlaced = BeamEditorInstanceManager.IsInstancePlaced(instance);
         VisualElement instanceWrapper = new VisualElement();

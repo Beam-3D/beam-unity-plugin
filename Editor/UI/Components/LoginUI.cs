@@ -1,6 +1,7 @@
 ﻿using Beam.Editor.Extensions;
 using Beam.Editor.Managers;
 using Beam.Runtime.Client.Utilities;
+using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Model;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEngine;
@@ -16,8 +17,8 @@ namespace Beam.Editor.UI.Components
     public LoginUI(BeamWindow beamWindow)
     {
       this.window = beamWindow;
-      LoginRequest request = BeamEditorDataManager.LoginRequest;
-      LoginResponse loginResponse = FileHelper.LoadLoginData();
+      ILoginRequest request = BeamEditorDataManager.LoginRequest;
+      ILoginResponse loginResponse = FileHelper.LoadLoginData();
 
       if (loginResponse?.User != null)
       {

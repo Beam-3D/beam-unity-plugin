@@ -55,7 +55,7 @@ namespace Beam.Editor.Editors
       BeamEditorInstanceManager.UpdatePlacements();
     }
 
-    private ProjectUnitInstance GetNextUnplacedInstance()
+    private IProjectUnitInstance GetNextUnplacedInstance()
     {
       return this.scriptInstance.ProjectUnit.Unit.Instances.FirstOrDefault(ins => !BeamEditorInstanceManager.IsInstancePlaced(ins));
     }
@@ -101,7 +101,7 @@ namespace Beam.Editor.Editors
             var selectedUnit = units[this.SelectedUnitIndex - 1];
 
             var selectedProjectUnit = areaUnits.ProjectUnits.FirstOrDefault(pu => pu.Unit.Id == selectedUnit.Unit.Id);
-            System.Collections.Generic.List<ProjectUnitInstance> instances = selectedProjectUnit.Unit.Instances.Where(ins => !BeamEditorInstanceManager.IsInstancePlaced(ins)).ToList();
+            System.Collections.Generic.List<IProjectUnitInstance> instances = selectedProjectUnit.Unit.Instances.Where(ins => !BeamEditorInstanceManager.IsInstancePlaced(ins)).ToList();
             if (!instances.Any())
             {
               GUILayout.Label($"All of this Units instances have been placed.", EditorStyles.boldLabel);
@@ -319,37 +319,37 @@ namespace Beam.Editor.Editors
 
       if (this.showEvents)
       {
-        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onFulfillmentUpdated"));
-        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onLodStatusChanged"));
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnFulfillmentUpdated"));
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnLodStatusChanged"));
 
         // Get specific unit type properties
 
         // Image
-        var onImageUnitFulfilled = this.serializedObject.FindProperty("onImageUnitFulfilled");
+        var onImageUnitFulfilled = this.serializedObject.FindProperty("OnImageUnitFulfilled");
         if (onImageUnitFulfilled != null)
         {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onImageUnitFulfilled"));
+          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnImageUnitFulfilled"));
         }
 
         // ThreeDimensional
-        var onThreeDimensionalUnitFulfilled = this.serializedObject.FindProperty("onThreeDimensionalUnitFulfilled");
+        var onThreeDimensionalUnitFulfilled = this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled");
         if (onThreeDimensionalUnitFulfilled != null)
         {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onThreeDimensionalUnitFulfilled"));
+          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled"));
         }
 
         // Audio
-        var onAudioUnitFulfilled = this.serializedObject.FindProperty("onAudioUnitFulfilled");
+        var onAudioUnitFulfilled = this.serializedObject.FindProperty("OnAudioUnitFulfilled");
         if (onAudioUnitFulfilled != null)
         {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onAudioUnitFulfilled"));
+          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnAudioUnitFulfilled"));
         }
 
         // Video
-        var onVideoUnitFulfilled = this.serializedObject.FindProperty("onVideoUnitFulfilled");
+        var onVideoUnitFulfilled = this.serializedObject.FindProperty("OnVideoUnitFulfilled");
         if (onVideoUnitFulfilled != null)
         {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onVideoUnitFulfilled"));
+          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnVideoUnitFulfilled"));
         }
 
         this.serializedObject.ApplyModifiedProperties();

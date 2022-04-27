@@ -12,7 +12,7 @@ using Beam.Runtime.Client.Managers;
 using Beam.Runtime.Client.Units;
 
 using ProjectUnit = Beam.Runtime.Sdk.Model.ProjectUnit;
-using AspectRatio = Beam.Runtime.Sdk.Generated.Model.AspectRatio;
+using IAspectRatio = Beam.Runtime.Sdk.Generated.Model.IAspectRatio;
 using Beam.Runtime.Client;
 
 #if UNITY_EDITOR
@@ -123,7 +123,7 @@ namespace Beam.Editor.Managers
       PlacedInstancesChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static bool IsInstancePlaced(ProjectUnitInstance unitInstance)
+    public static bool IsInstancePlaced(IProjectUnitInstance unitInstance)
     {
       if (unitInstance == null || PlacedInstances == null || !PlacedInstances.Any())
       {
@@ -133,7 +133,7 @@ namespace Beam.Editor.Managers
       return PlacedInstances.Any(au => au != null && au.UnitInstance.Id == unitInstance.Id);
     }
 
-    public static bool IsInstanceDuplicate(ProjectUnitInstance unitInstance)
+    public static bool IsInstanceDuplicate(IProjectUnitInstance unitInstance)
     {
       if (unitInstance == null || PlacedInstances == null || !PlacedInstances.Any())
       {
@@ -144,7 +144,7 @@ namespace Beam.Editor.Managers
     }
 
 
-    public static void RemoveUnitFromScene(ProjectUnitInstance unitInstance)
+    public static void RemoveUnitFromScene(IProjectUnitInstance unitInstance)
     {
       BeamUnitInstance au = PlacedInstances.FirstOrDefault(g => g.UnitInstance.Id == unitInstance.Id);
       if (au != null)
@@ -163,10 +163,10 @@ namespace Beam.Editor.Managers
     public static void AddUnitInstanceToScene(
       AssetKind kind,
       ProjectUnit projectUnit,
-      ProjectUnitInstance unitInstance
+      IProjectUnitInstance unitInstance
     )
     {
-      ProjectUnitWithInstancesResponse unit = projectUnit.Unit;
+      IProjectUnitWithInstances unit = projectUnit.Unit;
 
       BeamSessionManager sessionManager = Object.FindObjectOfType<BeamSessionManager>();
       if (sessionManager == null)
@@ -195,7 +195,7 @@ namespace Beam.Editor.Managers
       beamUnit.UnitInstance = unitInstance;
 
       BeamData beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
-      AspectRatio aspectRatio = projectUnit.GetAspectRatioId(beamData);
+      IAspectRatio aspectRatio = projectUnit.GetAspectRatioId(beamData);
 
       // Handle aspect ratio
       if (aspectRatio != null)
@@ -256,7 +256,7 @@ namespace Beam.Editor.Managers
         irreplaceableInstances = removedInstances.Where(instance =>
         {
           // Select all instances of the the unit the removed instance belongs to that aren't placed.
-          List<ProjectUnitInstance> availableUnits = BeamClient.Data.SceneUnits.SelectMany(sceneUnit => sceneUnit.ProjectUnits)
+          List<IProjectUnitInstance> availableUnits = BeamClient.Data.SceneUnits.SelectMany(sceneUnit => sceneUnit.ProjectUnits)
             .Where(unit => instance.ProjectUnit.Unit.Id == unit.Unit.Id).ToList()
             .SelectMany(projectUnit => projectUnit.Unit.Instances)
             .Where(i => !PlacedInstances.Select(pi => pi.UnitInstance).Contains(i)).ToList();

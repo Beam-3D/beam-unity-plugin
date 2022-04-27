@@ -18,7 +18,7 @@ namespace Beam.Editor.UI.Components
     public ProjectScenesUI(IBeamWindow beamWindow)
     {
       BeamData data = BeamClient.Data;
-      Project project = data.GetSelectedProject();
+      IProject project = data.GetSelectedProject();
 
       VisualElement projectHeaderContent = new VisualElement();
       projectHeaderContent.AddToClassList("beam-project-header-content");

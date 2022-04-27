@@ -11,6 +11,7 @@ using Beam.Runtime.Sdk;
 using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated;
 using Beam.Runtime.Sdk.Generated.Client;
+using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Model;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEditor;
@@ -118,7 +119,7 @@ namespace Beam.Editor.UI
         return;
       }
 
-      LoginResponse loginResponse = FileHelper.LoadLoginData();
+      ILoginResponse loginResponse = FileHelper.LoadLoginData();
 
       if (loginResponse == null || string.IsNullOrWhiteSpace(loginResponse.Token))
       {

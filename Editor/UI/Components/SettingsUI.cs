@@ -14,28 +14,28 @@ namespace Beam.Editor.UI.Components
 {
   public class SettingsUI : VisualElement
   {
-    private ExternalCreatableSession GetMockSession(string projectId)
+    private ICreatableSession GetMockSession(string projectId)
     {
-      return new ExternalCreatableSession
+      return new ICreatableSession
       {
         IsSandboxed = true,
         ProjectId = projectId,
-        Environment = new Runtime.Sdk.Generated.Model.Environment
+        Environment = new Runtime.Sdk.Generated.Model.IEnvironment
         {
           Engine = Engine.Unity,
           Version = Application.unityVersion
         },
-        Device = new ExternalCreatableDevice
+        Device = new ICreatableDevice
         {
           DeviceId = SystemInfo.deviceUniqueIdentifier,
           System = $"{SystemInfo.operatingSystem} {SystemInfo.operatingSystemFamily}",
           Hmd = null,
           AdvertiserId = "TBC"
         },
-        Consumer = new CreateUpdateSessionConsumer
+        Consumer = new ICreatableConsumer
         {
           Gender = Gender.Male,
-          Dob = new DateTime(1989, 02, 15),
+          Dob = new DateTime(1989, 02, 15).ToString("O"),
           Language = "en",
           Location = "GB"
         },
@@ -192,7 +192,7 @@ namespace Beam.Editor.UI.Components
         EditorUtility.SetDirty(data);
       });
 
-      PopupField<Language> languageField = new PopupField<Language>(
+      PopupField<ILanguage> languageField = new PopupField<ILanguage>(
         "Language",
         data.Languages,
         data.Languages.FirstOrDefault(l => l.Name == Application.systemLanguage.ToString()),
@@ -201,7 +201,7 @@ namespace Beam.Editor.UI.Components
       );
       languageField.RegisterValueChangedCallback(e => session.Consumer.Language = e.newValue.IsoCode);
 
-      PopupField<Location> locationField = new PopupField<Location>(
+      PopupField<ILocation> locationField = new PopupField<ILocation>(
         "Location",
         data.Locations,
         data.Locations.FirstOrDefault(l => l.IsoCode == "GB"),

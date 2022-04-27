@@ -8,6 +8,7 @@ namespace Beam.Runtime.Client.Loaders.Base
   public abstract class BeamLoader : MonoBehaviour
   {
     private BeamUnitInstance beamUnitInstance;
+    public EmptyFulfillmentBehaviour EmptyFulfillmentBehaviour;
     protected BeamUnitInstance BeamUnitInstance
     {
       get

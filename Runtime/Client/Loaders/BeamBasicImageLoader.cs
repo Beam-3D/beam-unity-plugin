@@ -53,6 +53,7 @@ namespace Beam.Runtime.Client.Loaders
       this.SetupForRenderPipeline();
 
       this.OriginalTexture = this.TargetRenderer.material.GetTexture(this.targetMaterialProperty);
+
       if (this.Placeholder)
       {
         this.TargetRenderer.material.SetTexture(this.targetMaterialProperty, this.Placeholder);
@@ -100,6 +101,8 @@ namespace Beam.Runtime.Client.Loaders
         {
           this.nextTexture = downloadedTexture;
         }
+
+        this.TargetRenderer.enabled = true;
 
       }
     }
@@ -157,6 +160,23 @@ namespace Beam.Runtime.Client.Loaders
     {
       if (fulfillmentData == null)
       {
+        return;
+      }
+      UnitFulfillmentStatusCode status = fulfillmentData.StatusCode;
+      if (status == UnitFulfillmentStatusCode.Started || status == UnitFulfillmentStatusCode.CompletedWithSameContent)
+      {
+        return;
+      }
+      if (status == UnitFulfillmentStatusCode.CompletedEmpty)
+      {
+        if (this.EmptyFulfillmentBehaviour == EmptyFulfillmentBehaviour.Hide)
+        {
+          this.ResetTexture();
+          this.nextTexture = null;
+          this.lowQualityTexture = null;
+          this.highQualityTexture = null;
+          this.TargetRenderer.enabled = false;
+        }
         return;
       }
 

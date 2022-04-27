@@ -1,5 +1,4 @@
-﻿using System;
-using Beam.Runtime.Client.Units.Events;
+﻿using Beam.Runtime.Client.Units.Events;
 using Beam.Runtime.Client.Units.Model;
 using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Utilities;
@@ -20,40 +19,43 @@ namespace Beam.Runtime.Client.Units
       this.Kind = AssetKind.Image;
     }
 
-    public override void HandleFulfillment(UnitFulfillmentResponse fulfillment)
+    public override void HandleFulfillment(IUnitFulfillmentResponse fulfillment)
     {
-      base.HandleFulfillment(fulfillment);
-      ImageContentResponseMetadata imageMetadata = fulfillment.Metadata as ImageContentResponseMetadata;
+      IImageContentResponseMetadata imageMetadata = fulfillment.Metadata as IImageContentResponseMetadata;
       var unit = this.ProjectUnit.Unit;
       if (imageMetadata != null)
       {
-        if (this.HasSameContent(imageMetadata))
-        {
-          return;
-        }
+        bool sameContent = this.HasSameContent(imageMetadata);
 
         this.ContentUrlHighQuality = imageMetadata.Content.High.Url;
         this.ContentUrlLowQuality = imageMetadata.Content.Low.Url;
 
-        BeamLogger.LogInfo($"Fulfilling Image Unit (HQ) {unit.Id} with {this.ContentUrlHighQuality}");
-        BeamLogger.LogInfo($"Fulfilling Image Unit (LQ) {unit.Id} with {this.ContentUrlLowQuality}");
+        BeamLogger.LogInfo($"Image Unit {unit.Id} fulfilled with {(sameContent ? "same content" : "new content")}");
 
-        this.OnFulfillmentUpdated.Invoke(new ImageUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality, this.ContentUrlLowQuality));
+
+        this.OnFulfillmentUpdated.Invoke(new ImageUnitFulfillmentData(sameContent ? UnitFulfillmentStatusCode.CompletedWithSameContent : UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality, this.ContentUrlLowQuality));
       }
       else if (fulfillment.Metadata == null)
       {
-        BeamLogger.LogInfo($"Image Unit {unit.Id} was not fulfilled");
+        BeamLogger.LogInfo($"Image Unit {unit.Id} was not fulfilled (Completed empty)");
         this.OnFulfillmentUpdated.Invoke(new ImageUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedEmpty, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
       else
       {
-        BeamLogger.LogInfo($"Image Unit {unit.Id} was not fulfilled, metadata was incorrect type");
+        BeamLogger.LogInfo($"Image Unit {unit.Id} was not fulfilled (Failed, metadata was incorrect type)");
         this.OnFulfillmentUpdated.Invoke(new ImageUnitFulfillmentData(UnitFulfillmentStatusCode.Failed, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
+      base.HandleFulfillment(fulfillment);
     }
 
     // Assumes fulfilment was successful metadata is not null
-    private bool HasSameContent(ImageContentResponseMetadata imageMetadata)
+    private bool HasSameContent(IImageContentResponseMetadata imageMetadata)
     {
       string hqUrl = imageMetadata.Content.High.Url;
       string lqUrl = imageMetadata.Content.Low.Url;

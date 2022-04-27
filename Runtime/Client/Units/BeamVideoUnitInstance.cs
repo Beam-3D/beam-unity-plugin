@@ -20,13 +20,14 @@ namespace Beam.Runtime.Client.Units
       this.Kind = AssetKind.Video;
     }
 
-    public override void HandleFulfillment(UnitFulfillmentResponse fulfillment)
+    public override void HandleFulfillment(IUnitFulfillmentResponse fulfillment)
     {
-      VideoContentResponseMetadata videoMetadata = fulfillment.Metadata as VideoContentResponseMetadata;
+      IVideoContentResponseMetadata videoMetadata = fulfillment.Metadata as IVideoContentResponseMetadata;
       var unit = this.ProjectUnit.Unit;
       if (videoMetadata != null)
       {
-        BeamLogger.LogInfo($"Fulfilling Video Unit {unit.Id}");
+        bool sameContent = this.HasSameContent(videoMetadata);
+        BeamLogger.LogInfo($"Video Unit {unit.Id} fulfilled with {(sameContent ? "same content" : "new content")}");
 
         string videoUrl = videoMetadata.Content.Video.Url;
         string billboardUrl = videoMetadata.Content.Billboard.Url;
@@ -34,19 +35,24 @@ namespace Beam.Runtime.Client.Units
         this.ContentUrlHighQuality = videoUrl;
 
         this.OnFulfillmentUpdated.Invoke(new VideoUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, videoMetadata.Content.Video.Url, billboardUrl));
-
-        base.HandleFulfillment(fulfillment);
       }
       else if (fulfillment.Metadata == null)
       {
         BeamLogger.LogInfo($"Video Unit {unit.Id} was not fulfilled");
         this.OnFulfillmentUpdated.Invoke(new VideoUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedEmpty, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
       else
       {
         BeamLogger.LogInfo($"Video Unit {unit.Id} was not fulfilled, metadata was incorrect type");
         this.OnFulfillmentUpdated.Invoke(new VideoUnitFulfillmentData(UnitFulfillmentStatusCode.Failed, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
+      base.HandleFulfillment(fulfillment);
     }
 
     public void LogMutedEvent(bool videoMuted)
@@ -82,6 +88,10 @@ namespace Beam.Runtime.Client.Units
     private void LogVideoEvent(VideoEventActionKind eventActionKind)
     {
       this.analyticsManager.LogVideoEvent(this.UnitInstance.Id, this.FulfillmentId, eventActionKind);
+    }
+    private bool HasSameContent(IVideoContentResponseMetadata videoMetadata)
+    {
+      return !string.IsNullOrWhiteSpace(this.ContentUrlHighQuality) && string.CompareOrdinal(this.ContentUrlHighQuality, videoMetadata.Content.Video.Url) == 0;
     }
 
   }

@@ -15,6 +15,13 @@ namespace Beam.Runtime.Client.Units.Events
       this.AudioUrl = audioUrl;
     }
 
+    public AudioUnitFulfillmentData(UnitFulfillmentData data)
+    {
+      this.StatusCode = data.StatusCode;
+      this.UnitId = data.UnitId;
+      this.AudioUrl = "";
+    }
+
     public readonly string AudioUrl;
   }
 }

@@ -18,7 +18,7 @@ namespace Beam.Runtime.Client.Units
     [HideInInspector]
     public ProjectUnit ProjectUnit;
     [HideInInspector]
-    public ProjectUnitInstance UnitInstance;
+    public IProjectUnitInstance UnitInstance;
     [HideInInspector]
     [SerializeField]
     public LodStatusChangedEvent OnLodStatusChanged;
@@ -39,7 +39,7 @@ namespace Beam.Runtime.Client.Units
     private BeamSessionManager sessionManager;
     private BeamCustomMetadataHandler customMetadataHandler;
 
-    public virtual void HandleFulfillment(UnitFulfillmentResponse fulfillment)
+    public virtual void HandleFulfillment(IUnitFulfillmentResponse fulfillment)
     {
       this.ProjectUnit.FulfilledSinceAwake = true;
       this.FulfillmentId = fulfillment.FulfillmentId;

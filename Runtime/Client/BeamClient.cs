@@ -27,7 +27,7 @@ namespace Beam.Runtime.Client
     public static readonly BeamSdk Sdk;
     public static readonly BeamData Data;
     public static readonly BeamRuntimeData RuntimeData;
-    public static Session CurrentSession;
+    public static ISession CurrentSession;
 
     static BeamClient()
     {
@@ -81,22 +81,22 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning("You must select a project before starting a session");
       }
 
-      ExternalCreatableSession sessionRequest = new ExternalCreatableSession
+      ICreatableSession sessionRequest = new ICreatableSession
       {
         ProjectId = RuntimeData.ProjectId,
-        Environment = new Environment
+        Environment = new IEnvironment
         {
           Engine = Engine.Unity,
           Version = Application.unityVersion
         },
-        Device = new ExternalCreatableDevice
+        Device = new ICreatableDevice
         {
           DeviceId = SystemInfo.deviceUniqueIdentifier,
           System = $"{SystemInfo.operatingSystem} {SystemInfo.operatingSystemFamily}",
           Hmd = HmdHandler.GetHMD(),
           AdvertiserId = "TBC"
         },
-        Consumer = new CreateUpdateSessionConsumer
+        Consumer = new ICreatableConsumer
         {
           Language = Application.systemLanguage.ToString().Substring(0, 2).ToLower(),
           Location = "GB"
@@ -118,7 +118,7 @@ namespace Beam.Runtime.Client
           {
             if (System.DateTime.TryParse(mockDob, out System.DateTime dob))
             {
-              sessionRequest.Consumer.Dob = dob;
+              sessionRequest.Consumer.Dob = dob.ToString("o");
             }
 
             sessionRequest.Consumer.Gender = Data.MockGender;
@@ -136,7 +136,7 @@ namespace Beam.Runtime.Client
         }
         if (parameters.DateOfBirth != null)
         {
-          sessionRequest.Consumer.Dob = System.DateTime.Parse(parameters.DateOfBirth);
+          sessionRequest.Consumer.Dob = parameters.DateOfBirth;
         }
         if (parameters.UserTagIds != null)
         {
@@ -144,7 +144,7 @@ namespace Beam.Runtime.Client
         }
       }
 
-      CurrentSession = await Sdk.Session.Session.StartPostAsync(sessionRequest);
+      CurrentSession = await Sdk.Session.StartSessionAsync(sessionRequest);
       BeamManagerHandler.GetAnalyticsManager().Init();
 
       if (RuntimeData.AutoStartFulfillment)
@@ -163,7 +163,7 @@ namespace Beam.Runtime.Client
         BeamLogger.LogError("There is no current running session so it cannot be stopped");
         return;
       }
-      await Sdk.Session.Session.IdStopPostAsync(CurrentSession.Id);
+      await Sdk.Session.StopSessionAsync(CurrentSession.Id);
       BeamManagerHandler.GetAnalyticsManager().TrackSessionStop();
     }
 
@@ -177,14 +177,14 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning($"Cannot add session tag '{tagName}' before the session has started.");
       }
 
-      Tag userTag = RuntimeData.UserTags.FirstOrDefault(t => t.Name == tagName);
+      ITag userTag = RuntimeData.UserTags.FirstOrDefault(t => t.Name == tagName);
       if (userTag == null)
       {
         BeamLogger.LogWarning($"User tag '{tagName}' does not match any from the server so it will be ignored.");
         return;
       }
 
-      await Sdk.Session.Session.SessionIdTagTagIdPostAsync(CurrentSession?.Id, userTag.Id);
+      await Sdk.Session.AddTagAsync(CurrentSession?.Id, userTag.Id);
       BeamLogger.LogInfo($"User tag '{tagName}' added to current session");
     }
 
@@ -199,7 +199,7 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning($"Cannot add tag before the session has started.");
       }
 
-      await Sdk.Session.Session.SessionIdTagTagIdPostAsync(CurrentSession?.Id, tagId);
+      await Sdk.Session.AddTagAsync(CurrentSession?.Id, tagId);
       BeamLogger.LogInfo($"User tag with ID '{tagId}' added to current session");
     }
 
@@ -213,14 +213,14 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning($"Cannot remove tag '{tagName}' before the session has started.");
       }
 
-      Tag userTag = RuntimeData.UserTags.FirstOrDefault(t => t.Name == tagName);
+      ITag userTag = RuntimeData.UserTags.FirstOrDefault(t => t.Name == tagName);
       if (userTag == null)
       {
         BeamLogger.LogWarning($"User tag '{tagName}' does not match any from the server so it will be ignored.");
         return;
       }
 
-      await Sdk.Session.Session.SessionIdTagTagIdDeleteAsync(CurrentSession?.Id, userTag.Id);
+      await Sdk.Session.DeleteTagAsync(CurrentSession?.Id, userTag.Id);
       BeamLogger.LogInfo($"User tag '{tagName}' removed from current session");
     }
 
@@ -235,7 +235,7 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning($"Cannot remove tag before the session has started.");
       }
 
-      await Sdk.Session.Session.SessionIdTagTagIdDeleteAsync(CurrentSession?.Id, tagId);
+      await Sdk.Session.DeleteTagAsync(CurrentSession?.Id, tagId);
       BeamLogger.LogInfo($"User tag with ID '{tagId}' removed from current session");
     }
 

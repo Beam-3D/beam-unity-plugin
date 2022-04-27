@@ -24,7 +24,7 @@ namespace Beam.Runtime.Client.Managers
 
   public class BeamFulfillmentManager : MonoBehaviour
   {
-    public FulfillmentResponse FulfillmentResponse;
+    public IFulfillmentResponse FulfillmentResponse;
 
     private InstantFulfillmentStatus InstantFulfillmentStatus { get; set; } =
       InstantFulfillmentStatus.NotStarted;
@@ -40,31 +40,31 @@ namespace Beam.Runtime.Client.Managers
       switch (kind)
       {
         case AssetKind.Audio:
-          metadata = new AudioFulfillmentRequestMetadata
+          metadata = new IAudioFulfillmentRequestMetadata
           {
-            Kind = AssetKind.Audio,
+            Kind = AssetKindAudio.Audio,
             AudioQualityId = maxQualityId
           };
           break;
         case AssetKind.Image:
-          metadata = new ImageFulfillmentRequestMetadata
+          metadata = new IImageFulfillmentRequestMetadata
           {
-            Kind = AssetKind.Image,
+            Kind = AssetKindImage.Image,
             LowImageQualityId = minQualityId,
             HighImageQualityId = maxQualityId
           };
           break;
         case AssetKind.Video:
-          metadata = new VideoFulfillmentRequestMetadata
+          metadata = new IVideoFulfillmentRequestMetadata
           {
-            Kind = AssetKind.Video,
+            Kind = AssetKindVideo.Video,
             VideoQualityId = maxQualityId
           };
           break;
         case AssetKind.ThreeDimensional:
-          metadata = new ThreeDimensionalFulfillmentRequestMetadata
+          metadata = new IThreeDimensionalFulfillmentRequestMetadata
           {
-            Kind = AssetKind.ThreeDimensional,
+            Kind = AssetKindThreeDimensional.ThreeDimensional,
             LowModelQualityId = minQualityId,
             HighModelQualityId = maxQualityId
           };
@@ -157,10 +157,7 @@ namespace Beam.Runtime.Client.Managers
 
       List<string> placedIds = placedUnits.Select(u => u.Unit.Id).ToList();
 
-      FulfillmentGetUnitIdChecksumsBody lastUpdatedRequest =
-        new FulfillmentGetUnitIdChecksumsBody(placedIds); // new FulfillmentGetLastUpdatedByUnitIdsBody(placedIds);
-
-      Task<List<UnitChecksum>> task = BeamClient.Sdk.Fulfillment.Fulfillment.ChecksumsPostAsync(lastUpdatedRequest);
+      Task<List<IUnitChecksum>> task = BeamClient.Sdk.Fulfillments.GetUnitIdChecksumsAsync(placedIds);
       yield return new WaitUntil(() => task.IsCompleted || task.IsFaulted || task.IsCanceled);
 
       if (task.IsFaulted)
@@ -178,7 +175,7 @@ namespace Beam.Runtime.Client.Managers
         yield break;
       }
 
-      List<UnitChecksum> lastUpdatedUnitChecksums = task.Result;
+      List<IUnitChecksum> lastUpdatedUnitChecksums = task.Result;
 
       var unitsToFulfill = placedInstances
         .Where(placedInstance => !string.IsNullOrEmpty(placedInstance.ProjectUnit.LastFulfillmentChecksum))
@@ -216,7 +213,6 @@ namespace Beam.Runtime.Client.Managers
         yield return new WaitForSeconds(0.5f);
       }
 
-      BeamLogger.LogInfo("Fulfillment complete");
       this.isFulfilling = false;
     }
     public async void RunManualFulfillment(List<BeamUnitInstance> unitInstances)
@@ -228,15 +224,15 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      FulfillmentRequest request = new FulfillmentRequest
+      IFulfillmentRequest request = new IFulfillmentRequest
       {
         SessionId = BeamClient.CurrentSession.Id,
-        Units = new List<UnitFulfillmentRequest>(unitInstances.Select(unitInstance =>
+        Units = new List<IUnitFulfillmentRequest>(unitInstances.Select(unitInstance =>
         {
           var kind = unitInstance.ProjectUnit.Kind;
           var projectUnit = unitInstance.ProjectUnit;
 
-          UnitFulfillmentRequest instance = new UnitFulfillmentRequest
+          IUnitFulfillmentRequest instance = new IUnitFulfillmentRequest
           {
             UnitId = projectUnit.Unit.Id
           };
@@ -249,7 +245,7 @@ namespace Beam.Runtime.Client.Managers
 
       unitInstances.ForEach(ui => this.HandleFulfillmentStartEvent(ui));
 
-      this.FulfillmentResponse = await BeamClient.Sdk.Fulfillment.Fulfillment.FulfillPostAsync(request);
+      this.FulfillmentResponse = await BeamClient.Sdk.Fulfillments.FulfillAsync(request);
       this.chunksComplete += 1;
       this.HandleFulfillments();
     }
@@ -261,26 +257,26 @@ namespace Beam.Runtime.Client.Managers
       {
         case AssetKind.Image:
           {
-            BeamImageUnitInstance threeDUnitInstance = (BeamImageUnitInstance)unitInstance;
-            threeDUnitInstance.OnFulfillmentUpdated?.Invoke(fulfillmentData as ImageUnitFulfillmentData);
+            BeamImageUnitInstance imageUnitInstance = (BeamImageUnitInstance)unitInstance;
+            imageUnitInstance.OnFulfillmentUpdated?.Invoke(new ImageUnitFulfillmentData(fulfillmentData));
             break;
           }
         case AssetKind.Audio:
           {
-            BeamAudioUnitInstance threeDUnitInstance = (BeamAudioUnitInstance)unitInstance;
-            threeDUnitInstance.OnFulfillmentUpdated?.Invoke(fulfillmentData as AudioUnitFulfillmentData);
+            BeamAudioUnitInstance audioInstance = (BeamAudioUnitInstance)unitInstance;
+            audioInstance.OnFulfillmentUpdated?.Invoke(new AudioUnitFulfillmentData(fulfillmentData));
             break;
           }
         case AssetKind.Video:
           {
-            BeamVideoUnitInstance threeDUnitInstance = (BeamVideoUnitInstance)unitInstance;
-            threeDUnitInstance.OnFulfillmentUpdated?.Invoke(fulfillmentData as VideoUnitFulfillmentData);
+            BeamVideoUnitInstance videoUnitInstance = (BeamVideoUnitInstance)unitInstance;
+            videoUnitInstance.OnFulfillmentUpdated?.Invoke(new VideoUnitFulfillmentData(fulfillmentData));
             break;
           }
         case AssetKind.ThreeDimensional:
           {
             BeamThreeDimensionalUnitInstance threeDUnitInstance = (BeamThreeDimensionalUnitInstance)unitInstance;
-            threeDUnitInstance.OnFulfillmentUpdated?.Invoke(fulfillmentData as ThreeDimensionalUnitFulfillmentData);
+            threeDUnitInstance.OnFulfillmentUpdated?.Invoke(new ThreeDimensionalUnitFulfillmentData(fulfillmentData));
             break;
           }
       }
@@ -289,7 +285,7 @@ namespace Beam.Runtime.Client.Managers
     private async void HandleFulfillments()
     {
       BeamUnitInstance[] unitInstances = FindObjectsOfType<BeamUnitInstance>();
-      List<ExternalCreateEvent> fulfillmentEvents = new List<ExternalCreateEvent>();
+      List<ICreateEvent> fulfillmentEvents = new List<ICreateEvent>();
       this.FulfillmentResponse.Units.ForEach(fr =>
       {
         List<BeamUnitInstance> matchedUnits = unitInstances.Where(ui => ui.ProjectUnit.Unit.Id == fr.UnitId).ToList();
@@ -303,7 +299,7 @@ namespace Beam.Runtime.Client.Managers
 
       if (fulfillmentEvents.Any())
       {
-        await BeamClient.Sdk.Analytics.Analytics.CreatePostAsync(fulfillmentEvents);
+        await BeamClient.Sdk.Events.SendAsync(fulfillmentEvents);
       }
     }
   }

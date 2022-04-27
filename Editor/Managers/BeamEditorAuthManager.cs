@@ -29,7 +29,7 @@ namespace Beam.Editor.Managers
 
     public static async Task<bool> CheckAuth()
     {
-      LoginResponse loginResponse = FileHelper.LoadLoginData();
+      ILoginResponse loginResponse = FileHelper.LoadLoginData();
       ServerError = false;
       // Check for missing token
       if (loginResponse == null || string.IsNullOrWhiteSpace(loginResponse.Token))
@@ -42,7 +42,7 @@ namespace Beam.Editor.Managers
       try
       {
         // This probably isn't ideal but not sure how best to check the token is valid?
-        await BeamClient.Sdk.Publishing.Project.ProjectsMyGetAsync(null, 1, new List<QueryWhereIProject>());
+        await BeamClient.Sdk.Projects.GetMyProjectsAsync(new IProjectsQuery(null, 1, new List<IQueryWhereIProject>()));
         ServerError = false;
         return true;
       }
@@ -76,13 +76,13 @@ namespace Beam.Editor.Managers
       return false;
     }
 
-    public static async Task Login(LoginRequest request)
+    public static async Task Login(ILoginRequest request)
     {
       try
       {
         request.Username = request.Username.ToLower();
         LoginStatusChanged?.Invoke(null, LoginEventStatus.LoginStarted);
-        LoginResponse loginResponse = await BeamClient.Sdk.Login(request);
+        ILoginResponse loginResponse = await BeamClient.Sdk.Login(request);
         FileHelper.SaveLoginData(loginResponse);
         LoginStatusChanged?.Invoke(null, LoginEventStatus.UserLoggedIn);
 

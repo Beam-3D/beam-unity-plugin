@@ -27,7 +27,7 @@ namespace Beam.Editor.Managers
 
   internal static class BeamEditorDataManager
   {
-    public static LoginRequest LoginRequest;
+    public static ILoginRequest LoginRequest;
     public static event EventHandler<DataUpdateType> DataUpdated;
     //public static event EventHandler ProjectChanged;
     public static event EventHandler FetchErrorThrown;
@@ -90,7 +90,7 @@ namespace Beam.Editor.Managers
         return;
       }
 
-      LoginRequest = new LoginRequest { Username = "", Password = "" };
+      LoginRequest = new ILoginRequest { Username = "", Password = "" };
 
       if (await BeamEditorAuthManager.CheckAuth())
       {
@@ -130,54 +130,52 @@ namespace Beam.Editor.Managers
       DataUpdated?.Invoke(null, DataUpdateType.FetchingStatus);
 
       async Task GetImageQualities() =>
-        BeamClient.Data.ImageQualities = await BeamClient.Sdk.Metadata.ImageQuality.ImageQualitiesAllGetAsync();
+        BeamClient.Data.ImageQualities = await BeamClient.Sdk.Metadata.GetAllImageQualitiesAsync();
 
       async Task GetVideoQualities() =>
-        BeamClient.Data.VideoQualities = await BeamClient.Sdk.Metadata.VideoQuality.VideoQualitiesAllGetAsync();
+        BeamClient.Data.VideoQualities = await BeamClient.Sdk.Metadata.GetAllVideoQualitiesAsync();
 
       async Task GetModelQualities() => BeamClient.Data.ModelQualities =
-        await BeamClient.Sdk.Metadata.ThreeDimensionalQuality.Call3dQualitiesAllGetAsync();
+        await BeamClient.Sdk.Metadata.GetAllThreeDimensionalQualitiesAsync();
 
       async Task GetAudioQualities() =>
-        BeamClient.Data.AudioQualities = await BeamClient.Sdk.Metadata.AudioQuality.AudioQualitiesAllGetAsync();
+        BeamClient.Data.AudioQualities = await BeamClient.Sdk.Metadata.GetAllAudioQualitiesAsync();
 
       async Task GetAspectRatios() =>
-        BeamClient.Data.AspectRatios = await BeamClient.Sdk.Metadata.AspectRatio.AspectRatiosAllGetAsync();
+        BeamClient.Data.AspectRatios = await BeamClient.Sdk.Metadata.GetAllAspectRatiosAsync();
 
-      async Task GetLanguages() => BeamClient.Data.Languages = await BeamClient.Sdk.Metadata.Language.LanguagesAllGetAsync();
-      async Task GetLocations() => BeamClient.Data.Locations = await BeamClient.Sdk.Metadata.Location.LocationsAllGetAsync();
-      async Task GetDevices() => BeamClient.Data.Devices = await BeamClient.Sdk.Metadata.Device.DevicesAllGetAsync();
+      async Task GetLanguages() => BeamClient.Data.Languages = await BeamClient.Sdk.Metadata.GetAllLanguagesAsync();
+      async Task GetLocations() => BeamClient.Data.Locations = await BeamClient.Sdk.Metadata.GetAllLocationsAsync();
+      async Task GetDevices() => BeamClient.Data.Devices = new List<string>((await BeamClient.Sdk.Metadata.GetAllDevicesAsync()).Select(x => x.Name));
 
       // TODO: make this work for >100 tags
-      TagGetBody userTagQuery = new TagGetBody
+      ITagQuery userTagQuery = new ITagQuery
       {
-        Query = new TagQuery
+        Page = "1",
+        PageSize = 100,
+        Where = new List<IQueryWhereITag>
         {
-          Page = "1",
-          PageSize = 100,
-          Where = new List<QueryWhereITag>
+          new IQueryWhereITag
           {
-            new QueryWhereITag
-            {
-              Key = ITagPropertyKeysEnum.Type, Operator = QueryOperator.Equals, ValueOne = "User"
-            }
+            Key = "type", Operator = QueryOperator.Equals, ValueOne = "User"
           }
         }
       };
 
-      CustomMetadataKeyGetBody customMetadataKeyQuery = new CustomMetadataKeyGetBody
+      ICustomMetadataKeyQuery customMetadataKeyQuery = new ICustomMetadataKeyQuery
       {
-        Query = new CustomMetadataKeyQuery { Page = "1", PageSize = 100 }
+        Page = "1",
+        PageSize = 100
       };
 
       async Task GetUserTags() =>
-        BeamClient.RuntimeData.UserTags = (await BeamClient.Sdk.Metadata.Tag.TagsPostAsync(userTagQuery)).Items;
+        BeamClient.RuntimeData.UserTags = (await BeamClient.Sdk.Metadata.SearchTagsAsync(userTagQuery)).Items;
 
       async Task GetProjects() => BeamClient.Data.Projects =
-        await BeamClient.Sdk.Publishing.Project.ProjectsMyGetAsync(null, 100, new List<QueryWhereIProject>());
+        await BeamClient.Sdk.Projects.GetMyProjectsAsync(new IProjectsQuery(null, 100, new List<IQueryWhereIProject>()));
 
       async Task GetMetadataKeys() => BeamClient.RuntimeData.CustomMetadataKeys =
-        (await BeamClient.Sdk.Metadata.CustomMetadataKey.CustomMetadataKeySearchPostAsync(customMetadataKeyQuery))
+        (await BeamClient.Sdk.Metadata.SearchCustomMetadataKeysAsync(customMetadataKeyQuery))
         .Items;
 
       try
@@ -206,7 +204,7 @@ namespace Beam.Editor.Managers
       AssetDatabase.Refresh();
 
       DataUpdated?.Invoke(null, DataUpdateType.All);
-      BeamClient.Data.CacheDate = DateTime.Now.AddHours(BeamClient.Data.HoursToCache).ToString("o");
+      BeamClient.Data.CacheDate = DateTime.Now.AddHours(BeamClient.Data.HoursToCache).ToString("O");
       EditorUtility.SetDirty(BeamClient.Data);
 
       if (BeamClient.Data.GetSelectedProject() == null)
@@ -225,8 +223,8 @@ namespace Beam.Editor.Managers
       {
         areaFetchPending = true;
         DataUpdated?.Invoke(null, DataUpdateType.FetchingStatus);
-        SearchResponseIScene result =
-          await BeamClient.Sdk.Publishing.Scene.ProjectsIdScenesPostAsync(projectId, new ScenesQueryOmitProjectId());
+        ISearchResponseIScene result =
+          await BeamClient.Sdk.ProjectScenes.GetScenesByProjectIdAsync(projectId, new IScenesQuery(null, 100, null, null, projectId));
         beamData.Scenes = result.Items;
       }
       finally
@@ -268,12 +266,17 @@ namespace Beam.Editor.Managers
         unitFetchPending = true;
         DataUpdated?.Invoke(null, DataUpdateType.FetchingStatus);
         // TODO: Make this work for more than 100 units.
-        SearchResponseIProjectUnitWithInstancesResponse response =
-          await BeamClient.Sdk.Publishing.ProjectUnit.ProjectsScenesSceneIdUnitsGetAsync(
+        ISearchResponseIProjectUnitWithInstances response =
+          await BeamClient.Sdk.ProjectUnits.GetProjectUnitsBySceneIdAsync(
             areaId,
-            null,
-            100,
-            new List<QueryWhereIProjectUnit>()
+            new IProjectUnitsQuery
+            (
+              null,
+              100,
+              new List<IQueryWhereICoreProjectUnit>(),
+              null,
+              areaId
+            )
           );
 
 
@@ -310,7 +313,7 @@ namespace Beam.Editor.Managers
       DataUpdated?.Invoke(null, DataUpdateType.Units);
     }
 
-    public static async Task SelectProject(Project project)
+    public static async Task SelectProject(IProject project)
     {
       BeamClient.Data.SetSelectedProject(project.Id);
       BeamClient.RuntimeData.ProjectId = project.Id;

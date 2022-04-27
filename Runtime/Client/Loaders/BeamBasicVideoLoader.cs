@@ -77,6 +77,22 @@ namespace Beam.Runtime.Client.Loaders
       {
         return;
       }
+      UnitFulfillmentStatusCode status = fulfillmentData.StatusCode;
+      if (status == UnitFulfillmentStatusCode.Started || status == UnitFulfillmentStatusCode.CompletedWithSameContent)
+      {
+        return;
+      }
+      if (status == UnitFulfillmentStatusCode.CompletedEmpty)
+      {
+        if (this.EmptyFulfillmentBehaviour == EmptyFulfillmentBehaviour.Hide)
+        {
+          this.videoPlayer.Stop();
+          this.videoPlayer.url = null;
+          this.billboard = null;
+          this.TargetRenderer.enabled = false;
+        }
+        return;
+      }
 
       string videoUrl = fulfillmentData.VideoUrl;
       string billboardUrl = fulfillmentData.BillboardUrl;

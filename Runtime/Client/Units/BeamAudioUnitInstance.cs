@@ -55,38 +55,41 @@ namespace Beam.Runtime.Client.Units
     }
 
 
-    public override void HandleFulfillment(UnitFulfillmentResponse fulfillment)
+    public override void HandleFulfillment(IUnitFulfillmentResponse fulfillment)
     {
-      AudioContentResponseMetadata audioMetadata = fulfillment.Metadata as AudioContentResponseMetadata;
+      IAudioContentResponseMetadata audioMetadata = fulfillment.Metadata as IAudioContentResponseMetadata;
       var unit = this.ProjectUnit.Unit;
       if (audioMetadata != null)
       {
-        // Same content, don't load
-        if (this.HasSameContent(audioMetadata))
-        {
-          return;
-        }
+        bool sameContent = this.HasSameContent(audioMetadata);
 
         this.ContentUrlHighQuality = audioMetadata.Content.Url;
-        BeamLogger.LogInfo($"Fulfilling Audio Unit {unit.Id}");
+        BeamLogger.LogInfo($"Audio Unit {unit.Id} fulfilled with {(sameContent ? "same content" : "new content")}");
 
-        this.OnFulfillmentUpdated.Invoke(new AudioUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality));
+        this.OnFulfillmentUpdated.Invoke(new AudioUnitFulfillmentData(sameContent ? UnitFulfillmentStatusCode.CompletedWithSameContent : UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality));
         base.HandleFulfillment(fulfillment);
       }
       else if (fulfillment.Metadata == null)
       {
-        BeamLogger.LogInfo($"Audio Unit {unit.Id} was not fulfilled");
+        BeamLogger.LogInfo($"Audio Unit {unit.Id} was not fulfilled (Completed empty)");
         this.OnFulfillmentUpdated.Invoke(new AudioUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedEmpty, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
       else
       {
-        BeamLogger.LogInfo($"Audio Unit {unit.Id} was not fulfilled, metadata was incorrect type");
+        BeamLogger.LogInfo($"Audio Unit {unit.Id} was not fulfilled (Failed, metadata was incorrect type)");
         this.OnFulfillmentUpdated.Invoke(new AudioUnitFulfillmentData(UnitFulfillmentStatusCode.Failed, unit.Id));
+
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
       }
+      base.HandleFulfillment(fulfillment);
     }
 
     // Assumes fulfillment was successful and audioMetadata is not null
-    private bool HasSameContent(AudioContentResponseMetadata audioMetadata)
+    private bool HasSameContent(IAudioContentResponseMetadata audioMetadata)
     {
       return !string.IsNullOrWhiteSpace(this.ContentUrlHighQuality) && string.CompareOrdinal(this.ContentUrlHighQuality, audioMetadata.Content.Url) == 0;
     }

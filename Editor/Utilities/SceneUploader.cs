@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +34,7 @@ namespace Beam.Editor.Utilities
       try
       {
         string modelUploadTicket = null;
-        RepresentationMetadata representationMetadata = null;
+        IRepresentationMetadata representationMetadata = null;
 
         if (uploadGeometry)
         {
@@ -67,38 +67,36 @@ namespace Beam.Editor.Utilities
       }
     }
 
-    private static async Task<FileCreationResult> IniateUploadModelToStorage(string fileName, int contentLength, string contentType, UploadApi uploadApi)
+    private static async Task<IFileCreationResult> InitiateUploadModelToStorage(string fileName, int contentLength, string contentType, StorageApi storageApi)
     {
       OrbitUploadMetadataAny uploadMetadata = new OrbitUploadMetadataAny(name: fileName, size: contentLength, contentType: "model/gltf-binary", additionalMetadata: new System.Object());
-      FileCreationResult result = await uploadApi.UploadBucketNamePostAsync(bucketName, uploadMetadata);
+      IFileCreationResult result = await storageApi.CreateFileAsync(bucketName, uploadMetadata);
 
       return result;
     }
     private static async Task<string> UploadModelToStorage(string filename, byte[] model)
     {
-      ApiClient client = new ApiClient(Endpoint.GetEndpoints().StorageUrl, new TokenManager());
-      UploadApi uploadApi = new UploadApi(client, client, new Configuration());
-      FileCreationResult postResponse = await IniateUploadModelToStorage(filename, model.Length, "model/gltf-binary", uploadApi);
+      ApiClient client = new ApiClient(Endpoint.GetEndpoints().ApiUrl, new TokenManager());
+      StorageApi storageApi = new StorageApi(client, client, new Configuration());
+      IFileCreationResult postResponse = await InitiateUploadModelToStorage(filename, model.Length, "model/gltf-binary", storageApi);
       await client.UploadByteArrayToStorage(model, bucketName, postResponse.Ticket);
       return postResponse.Ticket;
     }
 
-    private static async Task<IScene> UploadSceneRepresentation(string sceneId, string storageTicket, RepresentationMetadata metadata)
+    private static async Task<IScene> UploadSceneRepresentation(string sceneId, string storageTicket, IRepresentationMetadata metadata)
     {
-      ApiClient publishingApiClient = new ApiClient(Endpoint.GetEndpoints().PublishingUrl, new TokenManager());
-      SceneApi sceneApi = new SceneApi(publishingApiClient, publishingApiClient, new Configuration());
+      ApiClient publishingApiClient = new ApiClient(Endpoint.GetEndpoints().ApiUrl, new TokenManager());
+      ScenesApi sceneApi = new ScenesApi(publishingApiClient, publishingApiClient, new Configuration());
 
-      var scenes = await sceneApi.ProjectsScenesIdsGetAsync(new List<string>() { sceneId });
-      var scene = scenes.FirstOrDefault();
+      var scene = await sceneApi.GetSceneByIdAsync(sceneId);
       if (scene == null)
       {
         throw new Exception($"Failed to retrieve scene '{sceneId}'");
       }
 
-      UpdatableSceneRepresentationOmitId sceneRepresentation = new UpdatableSceneRepresentationOmitId(storageTicket, metadata, scene.UpdatedOn);
-      SceneUpdateSceneRepresentationBody sceneUpdateBody = new SceneUpdateSceneRepresentationBody(sceneRepresentation);
+      IUpdatableSceneRepresentation sceneUpdateBody = new IUpdatableSceneRepresentation(storageTicket, metadata, scene.UpdatedOn);
 
-      return await sceneApi.ProjectsScenesIdPatchAsync(sceneId, sceneUpdateBody);
+      return await sceneApi.UpdateSceneRepresentationAsync(sceneId, sceneUpdateBody);
     }
 
     public static async Task<byte[]> GetActiveSceneAsGlb()
@@ -149,9 +147,9 @@ namespace Beam.Editor.Utilities
       return AssetDatabase.GetAssetPath(texture);
     }
 
-    private static RepresentationMetadata GetRepresentationMetadataForScene(string sceneId)
+    private static IRepresentationMetadata GetRepresentationMetadataForScene(string sceneId)
     {
-      List<RepresentationUnitInstanceLocation> unitInstanceLocations = Object.FindObjectsOfType<BeamUnitInstance>()
+      List<IRepresentationUnitInstanceLocation> unitInstanceLocations = Object.FindObjectsOfType<BeamUnitInstance>()
       .Where(instance => instance.ProjectUnit.Unit.SceneId == sceneId)
       .Select(instance =>
       {
@@ -185,13 +183,13 @@ namespace Beam.Editor.Utilities
           instanceScale = instance.transform.lossyScale;
         }
 
-        Coordinates coordinatesPos = new Coordinates(instancePos.x, instancePos.y, instancePos.z);
-        Coordinates coordinatesRot = new Coordinates(instanceRot.x, instanceRot.y, instanceRot.z);
-        Coordinates coordinatesScale = new Coordinates(instanceScale.x, instanceScale.y, instanceScale.z);
-        return new RepresentationUnitInstanceLocation(instance.ProjectUnit.Unit.Id, instance.UnitInstance.Id, instance.ProjectUnit.Kind, coordinatesPos, coordinatesRot, coordinatesScale);
-      }).ToList<RepresentationUnitInstanceLocation>();
+        ICoordinates coordinatesPos = new ICoordinates(instancePos.x, instancePos.y, instancePos.z);
+        ICoordinates coordinatesRot = new ICoordinates(instanceRot.x, instanceRot.y, instanceRot.z);
+        ICoordinates coordinatesScale = new ICoordinates(instanceScale.x, instanceScale.y, instanceScale.z);
+        return new IRepresentationUnitInstanceLocation(instance.ProjectUnit.Unit.Id, instance.UnitInstance.Id, instance.ProjectUnit.Kind, coordinatesPos, coordinatesRot, coordinatesScale);
+      }).ToList<IRepresentationUnitInstanceLocation>();
 
-      return new RepresentationMetadata(CoordinateSystem.LeftHanded, unitInstanceLocations);
+      return new IRepresentationMetadata(CoordinateSystem.LeftHanded, unitInstanceLocations);
     }
   }
 }

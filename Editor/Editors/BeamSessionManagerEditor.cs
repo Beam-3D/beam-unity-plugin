@@ -37,9 +37,9 @@ namespace Beam.Editor.Editors
         GUI.enabled = !Application.isPlaying || canStartSession;
 
         GUILayout.Label("User tags", EditorStyles.boldLabel);
-        GUILayout.Label("The User Tags you enable here will be sent up with the session request to help you with debugging and testing User Tag based fulfilments.", EditorStyles.helpBox);
+        GUILayout.Label("The User Tags you enable here will be sent up with the session request to help you with debugging and testing User ITag based fulfilments.", EditorStyles.helpBox);
 
-        List<Tag> activeUserTags = new List<Tag>();
+        List<ITag> activeUserTags = new List<ITag>();
 
         BeamClient.RuntimeData.UserTags.ForEach(tag =>
         {

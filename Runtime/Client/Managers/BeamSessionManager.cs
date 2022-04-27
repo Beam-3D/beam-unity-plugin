@@ -6,7 +6,7 @@ namespace Beam.Runtime.Client.Managers
 {
   public class BeamSessionManager : MonoBehaviour
   {
-    public Session SessionResponse;
+    public ISession SessionResponse;
     public bool SessionRunning;
 
     public void Awake()

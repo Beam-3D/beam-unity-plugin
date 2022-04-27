@@ -16,6 +16,14 @@ namespace Beam.Runtime.Client.Units.Events
       this.LowQualityUrl = lowQualityUrl;
     }
 
+    public ThreeDimensionalUnitFulfillmentData(UnitFulfillmentData data)
+    {
+      this.StatusCode = data.StatusCode;
+      this.UnitId = data.UnitId;
+      this.HighQualityUrl = "";
+      this.LowQualityUrl = "";
+    }
+
     public readonly string HighQualityUrl;
     public readonly string LowQualityUrl;
   }

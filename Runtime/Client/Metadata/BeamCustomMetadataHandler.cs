@@ -5,6 +5,7 @@ using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated.Model;
 using UnityEngine;
 using UnityEngine.Events;
+using System;
 
 namespace Beam.Runtime.Client.Metadata
 {
@@ -16,7 +17,7 @@ namespace Beam.Runtime.Client.Metadata
     public List<CustomMetadataHandler> CustomMetadataHandlers;
 
     [SerializeField]
-    public List<AssetCustomMetadata> ReceivedMetadata;
+    public List<IAssetCustomMetadata> ReceivedMetadata;
     private protected void OnEnable()
     {
 #if UNITY_EDITOR
@@ -38,7 +39,7 @@ namespace Beam.Runtime.Client.Metadata
 #endif
     }
 
-    public void Handle(UnitFulfillmentResponse response)
+    public void Handle(IUnitFulfillmentResponse response)
     {
       if (response == null || response.CustomMetadata == null)
       {
@@ -46,13 +47,33 @@ namespace Beam.Runtime.Client.Metadata
       }
       response.CustomMetadata.ForEach(cm =>
       {
-        var matchedHandler = this.CustomMetadataHandlers.FirstOrDefault(k => k.Id == cm.KeyId);
+        CustomMetadataHandler matchedHandler = this.CustomMetadataHandlers.FirstOrDefault(k => k.Id == cm.KeyId);
         if (matchedHandler != null)
         {
           UnityEvent<string> ev = (UnityEvent<string>)matchedHandler.OnMetadataReceived;
-          MonoBehaviour target = (MonoBehaviour)ev.GetPersistentTarget(0);
-          string method = ev.GetPersistentMethodName(0);
-          target.SendMessage(method, cm.Value);
+          int count = ev.GetPersistentEventCount();
+          for (int i = 0; i < count; i++)
+          {
+            try
+            {
+              UnityEngine.Object target = ev.GetPersistentTarget(i);
+              if (!(target is MonoBehaviour))
+              {
+                continue;
+              }
+              if (target is null)
+              {
+                continue;
+              }
+              string method = ev.GetPersistentMethodName(i);
+              (target as MonoBehaviour).SendMessage(method, cm.Value);
+            }
+            catch (Exception e)
+            {
+              Debug.LogError($"Error triggering custom metadata handler {matchedHandler.Name} on gameobject {this.gameObject.name}.");
+              Debug.LogException(e);
+            }
+          }
         }
       });
     }
@@ -62,12 +83,12 @@ namespace Beam.Runtime.Client.Metadata
       BeamLogger.LogInfo($"The value was {value}");
     }
 
-    public AssetCustomMetadata GetAssetCustomMetadataByKeyId(string id)
+    public IAssetCustomMetadata GetAssetCustomMetadataByKeyId(string id)
     {
       return this.ReceivedMetadata.Where(cm => cm.KeyId == id).FirstOrDefault();
     }
 
-    public AssetCustomMetadata GetAssetCustomMetadataByName(string name)
+    public IAssetCustomMetadata GetAssetCustomMetadataByName(string name)
     {
       if (BeamClient.RuntimeData.CustomMetadataKeys == null)
       {
@@ -109,7 +130,7 @@ namespace Beam.Runtime.Client.Metadata
           this.CustomMetadataHandlers.Add(new CustomMetadataHandler(k.Id, k.Name, new ReceivedMetadataEvent()));
         }
       });
-      this.ReceivedMetadata = new List<AssetCustomMetadata>();
+      this.ReceivedMetadata = new List<IAssetCustomMetadata>();
     }
   }
 }

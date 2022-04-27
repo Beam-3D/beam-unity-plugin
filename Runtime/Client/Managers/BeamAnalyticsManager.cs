@@ -35,9 +35,9 @@ namespace Beam.Runtime.Client.Managers
     private List<GameObject> gazeMarkers;
     private GameObject lastHit;
     private Vector3 lastHitPoint;
-    private ExternalCreateEvent gazeStartEvent;
-    private List<ExternalCreateEvent> gazeEvents = new List<ExternalCreateEvent>();
-    private ExternalCreateEvent gazeEndEvent;
+    private ICreateEvent gazeStartEvent;
+    private List<ICreateEvent> gazeEvents = new List<ICreateEvent>();
+    private ICreateEvent gazeEndEvent;
     private BeamUnitInstance gazedUnitInstance;
 
     // Audio related
@@ -115,14 +115,14 @@ namespace Beam.Runtime.Client.Managers
 
       this.SendGazeEvents();
 
-      IEnumerable<ExternalCreateEvent> audioEndEvents = this.currentAudioEventReferences.Select(kvp =>
-        new ExternalCreateEvent
+      IEnumerable<ICreateEvent> audioEndEvents = this.currentAudioEventReferences.Select(kvp =>
+        new ICreateEvent
         {
           SessionId = BeamClient.CurrentSession?.Id,
-          Timestamp = DateTime.UtcNow,
-          Metadata = new AudioEventMetadata
+          Timestamp = DateTime.UtcNow.ToString("O"),
+          Metadata = new IAudioEventMetadata
           {
-            Kind = EventKind.Audio,
+            Kind = EventKindAudio.Audio,
             Action = AudioEventActionKind.End,
             FulfillmentId = kvp.Key.FulfillmentId,
             InstanceId = kvp.Key.InstanceId,
@@ -130,14 +130,14 @@ namespace Beam.Runtime.Client.Managers
           }
         });
 
-      IEnumerable<ExternalCreateEvent> videoEndEvents = this.currentVideoEventReferences.Select(kvp =>
-        new ExternalCreateEvent
+      IEnumerable<ICreateEvent> videoEndEvents = this.currentVideoEventReferences.Select(kvp =>
+        new ICreateEvent
         {
           SessionId = BeamClient.CurrentSession?.Id,
-          Timestamp = DateTime.UtcNow,
-          Metadata = new VideoEventMetadata
+          Timestamp = DateTime.UtcNow.ToString("O"),
+          Metadata = new IVideoEventMetadata
           {
-            Kind = EventKind.Video,
+            Kind = EventKindVideo.Video,
             Action = VideoEventActionKind.End,
             FulfillmentId = kvp.Key.FulfillmentId,
             InstanceId = kvp.Key.InstanceId,
@@ -145,14 +145,14 @@ namespace Beam.Runtime.Client.Managers
           }
         });
 
-      IEnumerable<ExternalCreateEvent> avEvents = audioEndEvents.Concat(videoEndEvents).ToList();
+      IEnumerable<ICreateEvent> avEvents = audioEndEvents.Concat(videoEndEvents).ToList();
 
       if (avEvents.Any())
       {
         LogEvents(avEvents);
       }
 
-      await BeamClient.Sdk.Session.Session.IdStopPostAsync(BeamClient.CurrentSession?.Id);
+      await BeamClient.Sdk.Session.StopSessionAsync(BeamClient.CurrentSession?.Id);
     }
 
     private void TrackPlayer()
@@ -279,7 +279,7 @@ namespace Beam.Runtime.Client.Managers
       this.lastHit = null;
       this.gazedUnitInstance = null;
 
-      List<ExternalCreateEvent> toSend = new List<ExternalCreateEvent> {this.gazeStartEvent};
+      List<ICreateEvent> toSend = new List<ICreateEvent> {this.gazeStartEvent};
       toSend.AddRange(this.gazeEvents);
       toSend.Add(this.gazeEndEvent);
 
@@ -287,21 +287,21 @@ namespace Beam.Runtime.Client.Managers
 
       // Cleanup for the next gaze
       this.gazeStartEvent = null;
-      this.gazeEvents = new List<ExternalCreateEvent>();
+      this.gazeEvents = new List<ICreateEvent>();
       this.gazeEndEvent = null;
       this.lastHitPoint = Vector3.zero;
       this.gazeMarkers.ForEach(Destroy);
       this.gazedUnitInstance = null;
     }
 
-    private static async void LogEvent(ExternalCreateEvent ev)
+    private static async void LogEvent(ICreateEvent ev)
     {
-      await BeamClient.Sdk.Analytics.Analytics.CreatePostAsync(new List<ExternalCreateEvent> {ev});
+      await BeamClient.Sdk.Events.SendAsync(new List<ICreateEvent> {ev});
     }
 
-    private static async void LogEvents(IEnumerable<ExternalCreateEvent> evs)
+    private static async void LogEvents(IEnumerable<ICreateEvent> evs)
     {
-      await BeamClient.Sdk.Analytics.Analytics.CreatePostAsync(new List<ExternalCreateEvent>(evs));
+      await BeamClient.Sdk.Events.SendAsync(new List<ICreateEvent>(evs));
     }
 
     private void LogPlayerUpdate(Vector3 position, Quaternion rotation)
@@ -323,13 +323,13 @@ namespace Beam.Runtime.Client.Managers
           continue;
         }
 
-        ExternalCreateEvent ev = new ExternalCreateEvent
+        ICreateEvent ev = new ICreateEvent
         {
           SessionId = BeamClient.CurrentSession?.Id,
-          Timestamp = DateTime.UtcNow,
-          Metadata = new PlayerUpdateEventMetadata
+          Timestamp = DateTime.UtcNow.ToString("O"),
+          Metadata = new IPlayerUpdateEventMetadata
           {
-            Kind = EventKind.PlayerUpdate,
+            Kind = EventKindPlayerUpdate.PlayerUpdate,
             Action = PlayerUpdateEventActionKind.PlayerUpdate,
             PlayerPosition = position.ToCoordinates(),
             PlayerRotation = rotation.ToCoordinates(),
@@ -359,13 +359,13 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      ExternalCreateEvent ev = new ExternalCreateEvent
+      ICreateEvent ev = new ICreateEvent
       {
         SessionId = BeamClient.CurrentSession?.Id,
-        Timestamp = DateTime.UtcNow,
-        Metadata = new ConvertedEventMetadata
+        Timestamp = DateTime.UtcNow.ToString("O"),
+        Metadata = new IConvertedEventMetadata
         {
-          Kind = EventKind.Converted,
+          Kind = EventKindConverted.Converted,
           Action = ConvertedEventActionKind.Converted,
           InstanceId = instanceId,
           FulfillmentId = fulfillmentId
@@ -417,13 +417,13 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      ExternalCreateEvent ev = new ExternalCreateEvent
+      ICreateEvent ev = new ICreateEvent
       {
         SessionId = BeamClient.CurrentSession?.Id,
-        Timestamp = DateTime.UtcNow,
-        Metadata = new AudioEventMetadata
+        Timestamp = DateTime.UtcNow.ToString("O"),
+        Metadata = new IAudioEventMetadata
         {
-          Kind = EventKind.Audio,
+          Kind = EventKindAudio.Audio,
           Action = actionKind,
           FulfillmentId = fulfillmentId,
           InstanceId = instanceId,
@@ -473,13 +473,13 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      ExternalCreateEvent ev = new ExternalCreateEvent
+      ICreateEvent ev = new ICreateEvent
       {
         SessionId = BeamClient.CurrentSession?.Id,
-        Timestamp = DateTime.UtcNow,
-        Metadata = new VideoEventMetadata
+        Timestamp = DateTime.UtcNow.ToString("O"),
+        Metadata = new IVideoEventMetadata
         {
-          Kind = EventKind.Video,
+          Kind = EventKindVideo.Video,
           Action = actionKind,
           FulfillmentId = fulfillmentId,
           InstanceId = instanceId,
@@ -530,13 +530,13 @@ namespace Beam.Runtime.Client.Managers
       
       BeamLogger.LogVerbose( $"Creating {gazeEventActionKind.ToString()} event for instance {this.gazedUnitInstance.UnitInstance.Id}");
 
-      ExternalCreateEvent gazeEvent = new ExternalCreateEvent
+      ICreateEvent gazeEvent = new ICreateEvent
       {
         SessionId = BeamClient.CurrentSession?.Id,
-        Timestamp = DateTime.UtcNow,
-        Metadata = new GazeEventMetadata
+        Timestamp = DateTime.UtcNow.ToString("O"),
+        Metadata = new IGazeEventMetadata
         {
-          Kind = EventKind.Gaze,
+          Kind = EventKindGaze.Gaze,
           Action = gazeEventActionKind,
           InstanceId = this.gazedUnitInstance.UnitInstance.Id,
           FulfillmentId = this.gazedUnitInstance.FulfillmentId,
@@ -553,7 +553,7 @@ namespace Beam.Runtime.Client.Managers
       {
         case GazeEventActionKind.Start:
           this.gazeStartEvent = gazeEvent;
-          this.gazeEvents = new List<ExternalCreateEvent>();
+          this.gazeEvents = new List<ICreateEvent>();
           break;
         case GazeEventActionKind.Update:
           this.gazeEvents?.Add(gazeEvent);

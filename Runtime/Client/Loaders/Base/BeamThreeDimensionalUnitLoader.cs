@@ -8,18 +8,18 @@ namespace Beam.Runtime.Client.Loaders.Base
   {
     public ThreeDimensionalLoadedEvent OnThreeDimensionalUnitLoaded;
 
-    private BeamThreeDimensionalUnitInstance beamVideoUnitInstance;
-    protected BeamThreeDimensionalUnitInstance BeamVideoUnitInstance
+    private BeamThreeDimensionalUnitInstance beamThreeDimensionalUnitInstance;
+    protected BeamThreeDimensionalUnitInstance BeamThreeDimensionalUnitInstance
     {
       get
       {
-        return this.beamVideoUnitInstance ? this.beamVideoUnitInstance : (this.beamVideoUnitInstance = this.GetComponent<BeamThreeDimensionalUnitInstance>());
+        return this.beamThreeDimensionalUnitInstance ? this.beamThreeDimensionalUnitInstance : (this.beamThreeDimensionalUnitInstance = this.GetComponent<BeamThreeDimensionalUnitInstance>());
       }
     }
 
     public void Awake()
     {
-      this.BeamVideoUnitInstance.OnFulfillmentUpdated.AddListener(this.HandleFulfillment);
+      this.BeamThreeDimensionalUnitInstance.OnFulfillmentUpdated.AddListener(this.HandleFulfillment);
     }
     public abstract void HandleFulfillment(ThreeDimensionalUnitFulfillmentData unitFulfillmentData);
   }

@@ -51,7 +51,7 @@ namespace Beam.Editor.UI.Components
 
       for (int i = 0; i < projects.Count; i++)
       {
-        Project project = projects[i];
+        IProject project = projects[i];
         VisualElement projectItem = new VisualElement();
         projectItem.AddToClassList("beam-project-item");
 

@@ -45,6 +45,22 @@ namespace Beam.Runtime.Client.Loaders
       {
         return;
       }
+      UnitFulfillmentStatusCode status = fulfillmentData.StatusCode;
+      if (status == UnitFulfillmentStatusCode.Started || status == UnitFulfillmentStatusCode.CompletedWithSameContent)
+      {
+        return;
+      }
+      if (status == UnitFulfillmentStatusCode.CompletedEmpty)
+      {
+        if (this.EmptyFulfillmentBehaviour == EmptyFulfillmentBehaviour.Hide)
+        {
+          this.AudioSource.Stop();
+          this.loadedClip = null;
+          this.nextClip = null;
+          this.AudioSource.enabled = false;
+        }
+        return;
+      }
       this.StartCoroutine(this.LoadAudio(new Uri(fulfillmentData.AudioUrl)));
     }
 

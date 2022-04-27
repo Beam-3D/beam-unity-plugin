@@ -23,39 +23,40 @@ namespace Beam.Runtime.Client.Units
       }
     }
 
-    public override void HandleFulfillment(UnitFulfillmentResponse fulfillment)
+    public override void HandleFulfillment(IUnitFulfillmentResponse fulfillment)
     {
-      ThreeDimensionalContentResponseMetadata modelMetadata = fulfillment.Metadata as ThreeDimensionalContentResponseMetadata;
+      IThreeDimensionalContentResponseMetadata modelMetadata = fulfillment.Metadata as IThreeDimensionalContentResponseMetadata;
       var unit = this.ProjectUnit.Unit;
       if (modelMetadata != null)
       {
-        if (this.HasSameContent(modelMetadata))
-        {
-          return;
-        }
-
-        this.transform.Clear();
+        bool sameContent = this.HasSameContent(modelMetadata);
 
         this.ContentUrlHighQuality = modelMetadata.Content.High.Url;
         this.ContentUrlLowQuality = modelMetadata.Content.Low.Url;
 
-        this.OnFulfillmentUpdated.Invoke(new ThreeDimensionalUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality, this.ContentUrlLowQuality));
-
-        base.HandleFulfillment(fulfillment);
+        BeamLogger.LogInfo($"3D Unit {unit.Id} fulfilled with {(sameContent ? "same content" : "new content")}");
+        this.OnFulfillmentUpdated.Invoke(new ThreeDimensionalUnitFulfillmentData(sameContent ? UnitFulfillmentStatusCode.CompletedWithSameContent : UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, this.ContentUrlHighQuality, this.ContentUrlLowQuality));
       }
       else if (fulfillment.Metadata == null)
       {
-        BeamLogger.LogInfo($"3D Unit {unit.Id} was not fulfilled");
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
+
+        BeamLogger.LogInfo($"3D Unit {unit.Id} was not fulfilled (Completed empty)");
         this.OnFulfillmentUpdated.Invoke(new ThreeDimensionalUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedEmpty, unit.Id));
       }
       else
       {
-        BeamLogger.LogInfo($"3D Unit {unit.Id} was not fulfilled, metadata was incorrect type");
+        this.ContentUrlHighQuality = null;
+        this.ContentUrlLowQuality = null;
+
+        BeamLogger.LogInfo($"3D Unit {unit.Id} was not fulfilled (Failed, metadata was incorrect type)");
         this.OnFulfillmentUpdated.Invoke(new ThreeDimensionalUnitFulfillmentData(UnitFulfillmentStatusCode.Failed, unit.Id));
       }
+      base.HandleFulfillment(fulfillment);
     }
 
-    private bool HasSameContent(ThreeDimensionalContentResponseMetadata modelMetadata)
+    private bool HasSameContent(IThreeDimensionalContentResponseMetadata modelMetadata)
     {
       string hqUrl = modelMetadata.Content.High.Url;
       string lqUrl = modelMetadata.Content.Low.Url;
