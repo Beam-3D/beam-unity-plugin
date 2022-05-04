@@ -6,7 +6,6 @@ using Beam.Runtime.Client.Units;
 using Beam.Runtime.Client.Units.Events;
 using Beam.Runtime.Client.Units.Model;
 using Beam.Runtime.Sdk.Utilities;
-using Beam.Runtime.Sdk;
 using Beam.Runtime.Sdk.Extensions;
 using Beam.Runtime.Sdk.Generated.Model;
 using Beam.Runtime.Sdk.Model;
@@ -115,7 +114,7 @@ namespace Beam.Runtime.Client.Managers
 
       BeamLogger.LogInfo($"{instantFulfillments.Count()} units to fulfill with 'Instant' fulfillment behaviour");
 
-      BeamUnitInstance[][] chunked = placedInstances.Chunk(50);
+      BeamUnitInstance[][] chunked = instantFulfillments.Chunk(50);
       this.chunksPending += chunked.Length;
 
       foreach (var batch in chunked)
@@ -234,16 +233,15 @@ namespace Beam.Runtime.Client.Managers
 
           IUnitFulfillmentRequest instance = new IUnitFulfillmentRequest
           {
-            UnitId = projectUnit.Unit.Id
+            UnitId = projectUnit.Unit.Id,
+            Metadata = this.BuildMetadata(kind, projectUnit.MinQualityId, projectUnit.MaxQualityId)
           };
-
-          instance.Metadata = this.BuildMetadata(kind, projectUnit.MinQualityId, projectUnit.MaxQualityId);
 
           return instance;
         }))
       };
 
-      unitInstances.ForEach(ui => this.HandleFulfillmentStartEvent(ui));
+      unitInstances.ForEach(this.HandleFulfillmentStartEvent);
 
       this.FulfillmentResponse = await BeamClient.Sdk.Fulfillments.FulfillAsync(request);
       this.chunksComplete += 1;

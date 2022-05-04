@@ -24,7 +24,6 @@ namespace Beam.Editor.Managers
   [InitializeOnLoad]
   public static class BeamEditorInstanceManager
   {
-
     public static List<BeamUnitInstance> PlacedInstances { get; private set; } = new List<BeamUnitInstance>();
     public static event EventHandler PlacedInstancesChanged;
 
@@ -34,8 +33,15 @@ namespace Beam.Editor.Managers
     static BeamEditorInstanceManager()
     {
       EditorSceneManager.sceneOpened += HandleSceneLoaded;
+      EditorApplication.playModeStateChanged += change =>
+      {
+        if (change == PlayModeStateChange.EnteredEditMode)
+        {
+          UpdatePlacements();
+        }
+      };
+        
       BeamEditorDataManager.DataUpdated += CheckCurrentSceneIsValid;
-
       EditorApplication.delayCall += CheckCurrentSceneIsValid;
     }
 
