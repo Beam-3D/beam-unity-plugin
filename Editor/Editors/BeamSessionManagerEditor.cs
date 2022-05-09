@@ -2,7 +2,6 @@
 using System.Linq;
 using Beam.Runtime.Client;
 using Beam.Runtime.Client.Managers;
-using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated.Model;
 using UnityEditor;
 using UnityEngine;
@@ -36,24 +35,6 @@ namespace Beam.Editor.Editors
         bool canStartSession = Application.isPlaying && !this.scriptInstance.SessionRunning && !BeamClient.RuntimeData.AutoStartSession;
         GUI.enabled = !Application.isPlaying || canStartSession;
 
-        GUILayout.Label("User tags", EditorStyles.boldLabel);
-        GUILayout.Label("The User Tags you enable here will be sent up with the session request to help you with debugging and testing User ITag based fulfilments.", EditorStyles.helpBox);
-
-        List<ITag> activeUserTags = new List<ITag>();
-
-        BeamClient.RuntimeData.UserTags.ForEach(tag =>
-        {
-          bool active = BeamClient.RuntimeData.ActiveUserTags.Contains(tag);
-          bool toggled = GUILayout.Toggle(active, tag.Name);
-          if (toggled)
-          {
-            activeUserTags.Add(tag);
-          }
-        });
-
-        BeamClient.RuntimeData.ActiveUserTags = activeUserTags;
-
-        GUI.enabled = canStartSession;
         if (GUILayout.Button("Start session"))
         {
           BeamClient.StartSession();

@@ -52,6 +52,10 @@ namespace Beam.Runtime.Client.Utilities
     private void DrawBounds(Bounds bounds)
     {
       Gizmos.color = Color.red;
+      if (this.transform == null || this.transform.GetChild(0) == null)
+      {
+        return;
+      }
       Gizmos.matrix = Matrix4x4.TRS(this.transform.GetChild(0).position, this.transform.rotation, bounds.size);
       Gizmos.DrawWireCube(Vector3.zero, new Vector3(1, 1, 1));
     }

@@ -34,8 +34,8 @@ namespace Beam.Editor.UI.Components
         },
         Consumer = new ICreatableConsumer
         {
-          Gender = Gender.Male,
-          Dob = new DateTime(1989, 02, 15).ToString("O"),
+          Gender = Gender.Other,
+          Dob = new DateTime(1989, 02, 15).ToString("yyyy-MM-dd"),
           Language = "en",
           Location = "GB"
         },
@@ -185,10 +185,10 @@ namespace Beam.Editor.UI.Components
 
       // DEMOGRAPHICS
       mockingForm.Add(new Label("Demographics").WithClass("beam-header"));
-      EnumField genderField = new EnumField("Gender", data.MockGender);
+      EnumField genderField = new EnumField("Gender", session.Consumer.Gender);
       genderField.RegisterValueChangedCallback(e =>
       {
-        data.MockGender = (Gender)e.newValue;
+        data.MockSession.Consumer.Gender = (Gender)e.newValue;
         EditorUtility.SetDirty(data);
       });
 
@@ -214,10 +214,34 @@ namespace Beam.Editor.UI.Components
       mockingForm.Add(languageField);
       mockingForm.Add(locationField);
 
-      TextField dobField = new TextField { label = "Date of birth (DD/MM/YYYY)", value = session.Consumer.Dob.ToString() };
-      dobField.RegisterValueChangedCallback(e => data.MockDob = e.newValue);
+      TextField dobField = new TextField { label = "Date of birth (YYYY-MM-DD)", value = session.Consumer.Dob };
+      dobField.RegisterValueChangedCallback(e => data.MockSession.Consumer.Dob = e.newValue);
 
       mockingForm.Add(dobField);
+
+      // USER TAGS
+      mockingForm.Add(new Label("User tags").WithClass("beam-header"));
+
+
+      runtimeData.UserTags.ForEach(tag =>
+      {
+        bool active = data.MockSession.UserTagIds.Contains(tag.Id);
+        Toggle userTagToggle = new Toggle(tag.Name) { value = active };
+        userTagToggle.RegisterValueChangedCallback(e =>
+              {
+                if (active)
+                {
+                  data.MockSession.UserTagIds.Remove(tag.Id);
+                }
+                else
+                {
+                  data.MockSession.UserTagIds.Add(tag.Id);
+                }
+                beamWindow.Render();
+              });
+
+        mockingForm.Add(userTagToggle);
+      });
 
       this.Add(mockingForm);
 

@@ -27,7 +27,10 @@ namespace Beam.Runtime.Client
     public static readonly BeamSdk Sdk;
     public static readonly BeamData Data;
     public static readonly BeamRuntimeData RuntimeData;
-    public static ISession CurrentSession;
+    public static ISession CurrentSession { 
+      get { return RuntimeData.CurrentSession; }
+      set { RuntimeData.CurrentSession = value; }
+    }
 
     static BeamClient()
     {
@@ -81,6 +84,17 @@ namespace Beam.Runtime.Client
         BeamLogger.LogWarning("You must select a project before starting a session");
       }
 
+      // Session already exists
+      if (!string.IsNullOrEmpty(CurrentSession?.Id))
+      {
+        if (RuntimeData.AutoStartFulfillment)
+        {
+          StartAutomaticFulfillment();
+        }
+
+        return;
+      }
+
       ICreatableSession sessionRequest = new ICreatableSession
       {
         ProjectId = RuntimeData.ProjectId,
@@ -110,19 +124,9 @@ namespace Beam.Runtime.Client
       {
         if (Data.MockSession != null && Data.MockDataEnabled)
         {
-          sessionRequest = Data.MockSession;
-          BeamLogger.LogInfo("Session running with mocked data");
+          sessionRequest = Data.GetSerializedMockData();
           sessionRequest.ProjectId = RuntimeData.ProjectId;
-          string mockDob = Data.MockDob;
-          if (!string.IsNullOrWhiteSpace(mockDob))
-          {
-            if (System.DateTime.TryParse(mockDob, out System.DateTime dob))
-            {
-              sessionRequest.Consumer.Dob = dob.ToString("o");
-            }
-
-            sessionRequest.Consumer.Gender = Data.MockGender;
-          }
+          BeamLogger.LogInfo("Session running with mocked data");
         }
       }
 #endif
@@ -145,6 +149,7 @@ namespace Beam.Runtime.Client
       }
 
       CurrentSession = await Sdk.Session.StartSessionAsync(sessionRequest);
+
       BeamManagerHandler.GetAnalyticsManager().Init();
 
       if (RuntimeData.AutoStartFulfillment)
