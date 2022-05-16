@@ -27,7 +27,8 @@ namespace Beam.Runtime.Client
     public static readonly BeamSdk Sdk;
     public static readonly BeamData Data;
     public static readonly BeamRuntimeData RuntimeData;
-    public static ISession CurrentSession { 
+    public static ISession CurrentSession
+    {
       get { return RuntimeData.CurrentSession; }
       set { RuntimeData.CurrentSession = value; }
     }
@@ -50,6 +51,7 @@ namespace Beam.Runtime.Client
         data = ScriptableObject.CreateInstance<BeamData>();
         AssetDatabase.CreateAsset(data, "Assets/Resources/Beam/BeamData.asset");
         AssetDatabase.SaveAssets();
+        BeamLogger.LogLevel = data.LogLevel;
       }
 #endif
 
@@ -87,6 +89,8 @@ namespace Beam.Runtime.Client
       // Session already exists
       if (!string.IsNullOrEmpty(CurrentSession?.Id))
       {
+        BeamManagerHandler.GetAnalyticsManager().Init();
+        
         if (RuntimeData.AutoStartFulfillment)
         {
           StartAutomaticFulfillment();
@@ -216,6 +220,7 @@ namespace Beam.Runtime.Client
       if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession.Id))
       {
         BeamLogger.LogWarning($"Cannot remove tag '{tagName}' before the session has started.");
+        return;
       }
 
       ITag userTag = RuntimeData.UserTags.FirstOrDefault(t => t.Name == tagName);
@@ -238,6 +243,7 @@ namespace Beam.Runtime.Client
       if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession?.Id))
       {
         BeamLogger.LogWarning($"Cannot remove tag before the session has started.");
+        return;
       }
 
       await Sdk.Session.DeleteTagAsync(CurrentSession?.Id, tagId);

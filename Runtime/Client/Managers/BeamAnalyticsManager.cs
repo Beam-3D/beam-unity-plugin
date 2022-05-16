@@ -272,8 +272,6 @@ namespace Beam.Runtime.Client.Managers
       {
         return;
       }
-      
-      BeamLogger.LogInfo("Sending Gaze events.");
 
       this.AddGazeEvent(GazeEventActionKind.End);
       this.lastHit = null;
@@ -282,6 +280,8 @@ namespace Beam.Runtime.Client.Managers
       List<ICreateEvent> toSend = new List<ICreateEvent> {this.gazeStartEvent};
       toSend.AddRange(this.gazeEvents);
       toSend.Add(this.gazeEndEvent);
+      
+      BeamLogger.LogInfo("Sending Gaze events.");
 
       LogEvents(toSend);
 
