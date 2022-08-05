@@ -94,7 +94,7 @@ namespace Beam.Editor.Utilities
         throw new Exception($"Failed to retrieve scene '{sceneId}'");
       }
 
-      IUpdatableSceneRepresentation sceneUpdateBody = new IUpdatableSceneRepresentation(storageTicket, metadata, scene.UpdatedOn);
+      IUpdatableSceneRepresentation sceneUpdateBody = new IUpdatableSceneRepresentation(storageTicket, metadata, scene.UpdatedOn, sceneId);
 
       return await sceneApi.UpdateSceneRepresentationAsync(sceneId, sceneUpdateBody);
     }

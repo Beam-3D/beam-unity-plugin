@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Beam.Runtime.Client.Units;
-using Beam.Runtime.Sdk.Utilities;
 using Beam.Runtime.Sdk;
 using Beam.Runtime.Sdk.Extensions;
 using Beam.Runtime.Sdk.Generated.Model;
+using Beam.Runtime.Sdk.Utilities;
 using UnityEngine;
 
 namespace Beam.Runtime.Client.Managers
@@ -13,15 +13,19 @@ namespace Beam.Runtime.Client.Managers
   [RequireComponent(typeof(BeamAreaBoundsManager))]
   public class BeamAnalyticsManager : MonoBehaviour
   {
-    public Camera mainCamera;
+    public Camera MainCamera;
 
-    private BeamSdk beamSdk;
-    [SerializeReference] private float? gazePositionThreshold;
+    private readonly BeamSdk beamSdk;
+    // Unity 2020 doesn't support serializing nullable fields
+    [SerializeField]
+    private float gazePositionThreshold;
     private bool ready;
 
     // Player related
     private Vector3 lastPlayerPosition;
-    [SerializeReference] private float? playerPositionThreshold;
+    // Unity 2020 doesn't support serializing nullable fields
+    [SerializeField]
+    private float playerPositionThreshold;
 
     // Gaze related
     public GameObject DebugGazeMarker;
@@ -66,22 +70,24 @@ namespace Beam.Runtime.Client.Managers
         this.areaBoundsList.Add(kvp.Value, kvp.Key);
       }
 
-      if (this.gazePositionThreshold == null)
+      if (this.gazePositionThreshold <= 0)
       {
+        BeamLogger.LogWarning("Gaze position threshold must be greater than 0. Setting to default of 0.05.");
         this.gazePositionThreshold = 0.05f;
       }
 
-      if (this.playerPositionThreshold == null)
+      if (this.playerPositionThreshold <= 0)
       {
-        this.playerPositionThreshold = 0.5f;
+        BeamLogger.LogWarning("Player position threshold must be greater than 0. Setting to default of 0.2");
+        this.playerPositionThreshold = 0.2f;
       }
 
-      if (this.mainCamera == null)
+      if (this.MainCamera == null)
       {
-        this.mainCamera = Camera.main;
+        this.MainCamera = Camera.main;
       }
 
-      if (this.mainCamera == null)
+      if (this.MainCamera == null)
       {
         BeamLogger.LogWarning("Main camera must be assigned for analytics. Please assign the main camera.");
         return;
@@ -162,7 +168,7 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      Transform playerTransform = this.mainCamera.transform;
+      Transform playerTransform = this.MainCamera.transform;
       Vector3 playerPosition = playerTransform.position;
       Quaternion playerRotation = playerTransform.rotation;
 
@@ -182,7 +188,7 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      Transform cam = this.mainCamera.transform;
+      Transform cam = this.MainCamera.transform;
       Ray forwardRay = new Ray(cam.position, cam.forward);
 
       // TODO: Add this back in in future
@@ -232,7 +238,7 @@ namespace Beam.Runtime.Client.Managers
           {
             // Send the gaze events for the previously gazed unit.
             this.SendGazeEvents();
-            
+
             this.lastHit = target.gameObject;
             this.gazedUnitInstance = this.lastHit.GetComponent<BeamUnitInstance>();
             if (this.gazedUnitInstance == null && this.EnableGazeEventsFor3DUnits)
@@ -246,7 +252,7 @@ namespace Beam.Runtime.Client.Managers
             if (this.gazedUnitInstance == null || string.IsNullOrWhiteSpace(this.gazedUnitInstance.FulfillmentId))
             {
               // No fulfillment. Clear out the object and ignore it.
-              
+
               return;
             }
 
@@ -272,16 +278,16 @@ namespace Beam.Runtime.Client.Managers
       {
         return;
       }
-      
-      BeamLogger.LogInfo("Sending Gaze events.");
 
       this.AddGazeEvent(GazeEventActionKind.End);
       this.lastHit = null;
       this.gazedUnitInstance = null;
 
-      List<ICreateEvent> toSend = new List<ICreateEvent> {this.gazeStartEvent};
+      List<ICreateEvent> toSend = new List<ICreateEvent> { this.gazeStartEvent };
       toSend.AddRange(this.gazeEvents);
       toSend.Add(this.gazeEndEvent);
+
+      BeamLogger.LogInfo("Sending Gaze events.");
 
       LogEvents(toSend);
 
@@ -296,7 +302,7 @@ namespace Beam.Runtime.Client.Managers
 
     private static async void LogEvent(ICreateEvent ev)
     {
-      await BeamClient.Sdk.Events.SendAsync(new List<ICreateEvent> {ev});
+      await BeamClient.Sdk.Events.SendAsync(new List<ICreateEvent> { ev });
     }
 
     private static async void LogEvents(IEnumerable<ICreateEvent> evs)
@@ -392,8 +398,8 @@ namespace Beam.Runtime.Client.Managers
         BeamLogger.LogInfo($"Instance {instanceId} has not been fulfilled. Aborting audio event creation.");
         return;
       }
-      
-      UnitInstanceData key = new UnitInstanceData(instanceId, fulfillmentId); 
+
+      UnitInstanceData key = new UnitInstanceData(instanceId, fulfillmentId);
 
       this.currentAudioEventReferences.TryGetValue(key, out Guid currentReference);
 
@@ -405,12 +411,12 @@ namespace Beam.Runtime.Client.Managers
           BeamLogger.LogInfo("Video already started, skipping video start event.");
           return;
         }
-        
+
         currentReference = Guid.NewGuid();
         this.currentAudioEventReferences.Add(new UnitInstanceData(instanceId, fulfillmentId), currentReference);
       }
 
-      
+
       if (currentReference == Guid.Empty)
       {
         BeamLogger.LogInfo($"Audio start event for instance {instanceId} has not been sent, event will not be logged");
@@ -451,7 +457,7 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
-      UnitInstanceData key = new UnitInstanceData(instanceId, fulfillmentId); 
+      UnitInstanceData key = new UnitInstanceData(instanceId, fulfillmentId);
 
       this.currentVideoEventReferences.TryGetValue(key, out Guid currentReference);
 
@@ -462,7 +468,7 @@ namespace Beam.Runtime.Client.Managers
           BeamLogger.LogInfo("Video already started, skipping video start event.");
           return;
         }
-        
+
         currentReference = Guid.NewGuid();
         this.currentVideoEventReferences.Add(new UnitInstanceData(instanceId, fulfillmentId), currentReference);
       }
@@ -486,12 +492,12 @@ namespace Beam.Runtime.Client.Managers
           Reference = currentReference.ToString()
         }
       };
-      
+
       if (actionKind == VideoEventActionKind.End)
       {
         this.currentVideoEventReferences.Remove(key);
       }
-      
+
       LogEvent(ev);
     }
 
@@ -514,7 +520,7 @@ namespace Beam.Runtime.Client.Managers
           $"Instance {this.gazedUnitInstance.UnitInstance.Id} has not been fulfilled. Aborting gaze event creation.");
       }
 
-      Transform mainCamTransform = this.mainCamera.transform;
+      Transform mainCamTransform = this.MainCamera.transform;
 
       if (gazeEventActionKind == GazeEventActionKind.Start)
       {
@@ -527,8 +533,8 @@ namespace Beam.Runtime.Client.Managers
           $"Gaze start event not found, aborting gaze event creation for instance {this.gazedUnitInstance.UnitInstance.Id}.");
         return;
       }
-      
-      BeamLogger.LogVerbose( $"Creating {gazeEventActionKind.ToString()} event for instance {this.gazedUnitInstance.UnitInstance.Id}");
+
+      BeamLogger.LogVerbose($"Creating {gazeEventActionKind.ToString()} event for instance {this.gazedUnitInstance.UnitInstance.Id}");
 
       ICreateEvent gazeEvent = new ICreateEvent
       {

@@ -54,7 +54,18 @@ namespace Beam.Runtime.Client.Utilities
       {
         BoxCollider collider = this.gameObject.AddComponent<BoxCollider>();
 
-        collider.size = bounds.size; // * targetScale;
+
+
+        if (this.transform.lossyScale.x == 0)
+        {
+          collider.size = bounds.size;
+        }
+        else
+        {
+          // We have made the assumption that the scale is consistent across all axes
+          collider.size = bounds.size / this.transform.lossyScale.x;
+        }
+
         collider.center = this.transform.GetChild(0).localPosition;
       }
       if (this.ColliderType == ColliderType.Sphere)

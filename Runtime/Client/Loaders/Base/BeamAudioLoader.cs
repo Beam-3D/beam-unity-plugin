@@ -18,8 +18,10 @@ namespace Beam.Runtime.Client.Loaders.Base
       }
     }
 
+    // These calls have to be duplicated because of an issue with Unity and inheritance
     public void Awake()
     {
+      this.BeamAudioUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
       this.BeamAudioUnitInstance.OnFulfillmentUpdated.AddListener(this.HandleFulfillment);
     }
 

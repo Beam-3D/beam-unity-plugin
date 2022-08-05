@@ -19,11 +19,6 @@ namespace Beam.Runtime.Client.Loaders.Base
 
     protected LodStatus CurrentLodStatus { get { return this.BeamUnitInstance.LodStatus; } }
 
-    private void OnEnable()
-    {
-      this.BeamUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
-    }
-
     protected abstract void HandleLodChange(LodStatus lodStatus);
   }
 }

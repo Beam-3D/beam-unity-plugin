@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using Beam.Runtime.Client.Loaders.Base;
 using Beam.Runtime.Client.Loaders.Events;
 using Beam.Runtime.Client.Units;
@@ -9,6 +10,7 @@ using Beam.Runtime.Client.Utilities;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Rendering;
 
 namespace Beam.Runtime.Client.Loaders
 {
@@ -16,12 +18,14 @@ namespace Beam.Runtime.Client.Loaders
   public class BeamBasicImageLoader : BeamImageLoader
   {
     public Texture2D Placeholder;
-    [HideInInspector]
-    public Texture OriginalTexture;
     public Renderer TargetRenderer;
 
+    [SerializeField]
+    private Material targetMaterial;
+    [SerializeField]
+    private string targetMaterialProperty = "";
+    private Texture originalTexture;
     private Texture2D nextTexture;
-    private string targetMaterialProperty = "_MainTex";
     private Texture2D highQualityTexture;
     private Texture2D lowQualityTexture;
     private BeamAspectRatioHandler beamAspectRatioHandler;
@@ -49,14 +53,27 @@ namespace Beam.Runtime.Client.Loaders
 
         this.TargetRenderer = fetchedRenderer;
       }
+      
+      this.targetMaterial = this.TargetRenderer.material;
 
-      this.SetupForRenderPipeline();
+      if (string.IsNullOrEmpty(this.targetMaterialProperty))
+      {
 
-      this.OriginalTexture = this.TargetRenderer.material.GetTexture(this.targetMaterialProperty);
+        int[] propertyIndices = Enumerable.Range(0, this.targetMaterial.shader.GetPropertyCount())
+          .Where(v => this.targetMaterial.shader.GetPropertyType(v) == ShaderPropertyType.Texture).ToArray();
+
+        if (!propertyIndices.Any())
+        {
+          this.targetMaterialProperty = "_MainTex";
+        }
+
+        this.targetMaterialProperty = this.targetMaterial.shader.GetPropertyName(propertyIndices[0]);
+      }
+      this.originalTexture = this.targetMaterial.GetTexture(this.targetMaterialProperty);
 
       if (this.Placeholder)
       {
-        this.TargetRenderer.material.SetTexture(this.targetMaterialProperty, this.Placeholder);
+        this.targetMaterial.SetTexture(this.targetMaterialProperty, this.Placeholder);
       }
     }
 
@@ -74,7 +91,7 @@ namespace Beam.Runtime.Client.Loaders
 
       UnityWebRequest www = UnityWebRequestTexture.GetTexture(uri);
       yield return www.SendWebRequest();
-#if UNITY20201ORNEWER
+#if UNITY_2020_1_OR_NEWER
     if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
 #else
       if (www.isNetworkError || www.isHttpError)
@@ -114,7 +131,7 @@ namespace Beam.Runtime.Client.Loaders
         return;
       }
 
-      this.TargetRenderer.material.SetTexture(this.targetMaterialProperty, this.nextTexture);
+      this.targetMaterial.SetTexture(this.targetMaterialProperty, this.nextTexture);
       if (this.beamAspectRatioHandler != null)
       {
         this.beamAspectRatioHandler.HandleAspectRatio(this.nextTexture.width, this.nextTexture.height);
@@ -122,39 +139,14 @@ namespace Beam.Runtime.Client.Loaders
       this.TargetRenderer.enabled = true;
       this.nextTexture = null;
     }
-    private void SetupForRenderPipeline()
-    {
-      UnityRenderPipeline pipeline = DetermineRenderPipeline.GetRenderSettings();
-      switch (pipeline)
-      {
-        case UnityRenderPipeline.Legacy:
-          this.targetMaterialProperty = "_MainTex";
-          break;
-        case UnityRenderPipeline.UniversalRenderPipeline:
-#if UNITY_2020_1_OR_NEWER
-            case UnityRenderPipeline.UniversalRenderPipeline2020:
-#endif
-          this.targetMaterialProperty = "_BaseMap";
-          break;
-        case UnityRenderPipeline.HighDefRenderPipeline:
-          this.targetMaterialProperty = "_BaseColorMap";
-          break;
-        case UnityRenderPipeline.Unknown:
-        default:
-          BeamLogger.LogWarning("Unable to determine render pipeline");
-          break;
-      }
-    }
 
     public void ResetTexture()
     {
       if (this.TargetRenderer)
       {
-        this.TargetRenderer.sharedMaterial.SetTexture(this.targetMaterialProperty, this.OriginalTexture);
+        this.TargetRenderer.sharedMaterial.SetTexture(this.targetMaterialProperty, this.originalTexture);
       }
     }
-
-
 
     public override void HandleFulfillment(ImageUnitFulfillmentData fulfillmentData)
     {

@@ -207,10 +207,18 @@ namespace Beam.Editor.Managers
       BeamClient.Data.CacheDate = DateTime.Now.AddHours(BeamClient.Data.HoursToCache).ToString("O");
       EditorUtility.SetDirty(BeamClient.Data);
 
+      BeamClient.Data.SetSelectedProject(BeamClient.RuntimeData.ProjectId);
+
       if (BeamClient.Data.GetSelectedProject() == null)
       {
         BeamClient.Data.SceneUnits?.RemoveAll(su => BeamClient.Data.Scenes.All(scene => scene.Id != su.SceneId));
         DataUpdated?.Invoke(null, DataUpdateType.Units);
+      }
+      else
+      {
+        // TODO: Update this so that unit error warnings don't show if a scene hasn't been selected yet.
+        await GetAreas(BeamClient.Data.GetSelectedProject().Id);
+        DataUpdated?.Invoke(null, DataUpdateType.Areas);
       }
     }
 

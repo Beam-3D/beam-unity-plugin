@@ -21,8 +21,12 @@ namespace Beam.Runtime.Client.Utilities
     public bool ResizeOnStart;
     [HideInInspector]
     public Bounds Bounds;
+
+    private float targetLossyScale = 1;
     private protected void Start()
     {
+
+      this.targetLossyScale = this.TargetScale * this.transform.lossyScale.x;
       if (this.ResizeOnStart)
       {
         this.Resize();
@@ -32,10 +36,11 @@ namespace Beam.Runtime.Client.Utilities
     private protected void OnDrawGizmos()
     {
       Gizmos.color = Color.blue;
-      Vector3 currentPos = this.transform.position;
-
-      Vector3 cubeCenter = this.SnapToBase ? new Vector3(currentPos.x, this.PivotAtBase ? currentPos.y + this.TargetScale / 2 : currentPos.y, currentPos.z) : currentPos;
-      Vector3 scale = new Vector3(this.TargetScale, this.TargetScale, this.TargetScale);
+      Transform t = this.transform;
+      Vector3 currentPos = t.position;
+      this.targetLossyScale = this.TargetScale * t.lossyScale.x;
+      Vector3 cubeCenter = this.SnapToBase ? new Vector3(currentPos.x, this.PivotAtBase ? currentPos.y + this.targetLossyScale / 2 : currentPos.y, currentPos.z) : currentPos;
+      Vector3 scale = new Vector3(this.targetLossyScale, this.targetLossyScale, this.targetLossyScale);
 
       var oldMatrix = Gizmos.matrix;
 
@@ -52,11 +57,12 @@ namespace Beam.Runtime.Client.Utilities
     private void DrawBounds(Bounds bounds)
     {
       Gizmos.color = Color.red;
-      if (this.transform == null || this.transform.GetChild(0) == null)
+      Transform t = this.transform;
+      if (t == null || t.GetChild(0) == null)
       {
         return;
       }
-      Gizmos.matrix = Matrix4x4.TRS(this.transform.GetChild(0).position, this.transform.rotation, bounds.size);
+      Gizmos.matrix = Matrix4x4.TRS(t.GetChild(0).position, t.rotation, bounds.size);
       Gizmos.DrawWireCube(Vector3.zero, new Vector3(1, 1, 1));
     }
 
@@ -102,8 +108,9 @@ namespace Beam.Runtime.Client.Utilities
 
     private void ResizeInstance(Transform instance)
     {
-      var oldRotation = this.transform.rotation;
-      this.transform.rotation = Quaternion.identity;
+      Transform t = this.transform;
+      var oldRotation = t.rotation;
+      t.rotation = Quaternion.identity;
       instance.localPosition = Vector3.zero;
 
       Bounds boundingBox = this.GetBoundingBox();
@@ -123,17 +130,16 @@ namespace Beam.Runtime.Client.Utilities
       {
         Bounds finalBounds = this.GetBoundingBox();
         float extentsY = finalBounds.size.y;
-        pivot.transform.position -= new Vector3(0, (this.TargetScale / 2) - (extentsY / 2), 0);
+        pivot.transform.position -= new Vector3(0, (this.targetLossyScale / 2) - (extentsY / 2), 0);
         if (this.PivotAtBase)
         {
-          pivot.transform.position += new Vector3(0, this.TargetScale / 2, 0);
+          pivot.transform.position += new Vector3(0, this.targetLossyScale / 2, 0);
         }
       }
 
       Bounds completeBounds = this.GetBoundingBox();
       this.Bounds = completeBounds;
       this.OnResizeCompleted?.Invoke(this.Bounds);
-
       this.transform.rotation = oldRotation;
     }
 

@@ -69,6 +69,7 @@ namespace Beam.Editor.UI.Components
           return;
         }
         data.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), e.newValue);
+        BeamLogger.LogLevel = data.LogLevel;
       });
       logLevelSection.Add(logLevelSelection);
 
@@ -225,7 +226,7 @@ namespace Beam.Editor.UI.Components
 
       runtimeData.UserTags.ForEach(tag =>
       {
-        bool active = data.MockSession.UserTagIds.Contains(tag.Id);
+        bool active = data.MockSession?.UserTagIds != null && data.MockSession.UserTagIds.Contains(tag.Id);
         Toggle userTagToggle = new Toggle(tag.Name) { value = active };
         userTagToggle.RegisterValueChangedCallback(e =>
               {

@@ -17,8 +17,10 @@ namespace Beam.Runtime.Client.Loaders.Base
       }
     }
 
+    // These calls have to be duplicated because of an issue with Unity and inheritance
     public void Awake()
     {
+      this.BeamThreeDimensionalUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
       this.BeamThreeDimensionalUnitInstance.OnFulfillmentUpdated.AddListener(this.HandleFulfillment);
     }
     public abstract void HandleFulfillment(ThreeDimensionalUnitFulfillmentData unitFulfillmentData);

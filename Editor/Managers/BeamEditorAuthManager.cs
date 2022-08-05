@@ -85,7 +85,6 @@ namespace Beam.Editor.Managers
         ILoginResponse loginResponse = await BeamClient.Sdk.Login(request);
         FileHelper.SaveLoginData(loginResponse);
         LoginStatusChanged?.Invoke(null, LoginEventStatus.UserLoggedIn);
-
       }
       catch (Exception)
       {
@@ -107,7 +106,7 @@ namespace Beam.Editor.Managers
       FileHelper.DeleteLoginData();
       ServerError = false;
       LoginStatusChanged?.Invoke(null, LoginEventStatus.UserLoggedOut);
-      BeamClient.RuntimeData.ClearData();
+      // Runtime data does not need to be cleared on logout as it's public information
       BeamClient.Data.ClearData();
     }
   }
