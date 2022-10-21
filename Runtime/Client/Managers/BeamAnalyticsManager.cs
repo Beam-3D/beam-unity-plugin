@@ -60,13 +60,23 @@ namespace Beam.Runtime.Client.Managers
 
     public void Init()
     {
-      BeamLogger.LogInfo($"Started session with ID {BeamClient.CurrentSession?.Id}");
+      if (this.ready)
+      {
+        BeamLogger.LogInfo($"Analytics already running for session with ID {BeamClient.CurrentSession?.Id}");
+        return;
+      }
+      
+      BeamLogger.LogInfo($"Started analytics for session with ID {BeamClient.CurrentSession?.Id}");
       this.gazeMarkers = new List<GameObject>();
       this.areaBoundsManager = this.GetComponent<BeamAreaBoundsManager>();
       // Inverting the SceneBoundsList so we can look up colliders rather than sceneIds
       // Only one collider is allowed per scene so this should be fine.
       foreach (KeyValuePair<string, BoxCollider> kvp in this.areaBoundsManager.AreaBoundsList)
       {
+        if (this.areaBoundsList.ContainsKey(kvp.Value))
+        {
+          continue;
+        }
         this.areaBoundsList.Add(kvp.Value, kvp.Key);
       }
 
@@ -107,18 +117,27 @@ namespace Beam.Runtime.Client.Managers
       this.TrackPlayer();
     }
 
-    void OnApplicationQuit()
-    {
-      this.TrackSessionStop();
-    }
-
     public async void TrackSessionStop()
+    {
+      if (string.IsNullOrEmpty(BeamClient.CurrentSession?.Id))
+      {
+        return;
+      }
+
+      this.StopAnalytics();
+
+      await BeamClient.Sdk.Session.StopSessionAsync(BeamClient.CurrentSession?.Id);
+    }
+    
+    public void StopAnalytics()
     {
       if (!this.ready || string.IsNullOrEmpty(BeamClient.CurrentSession?.Id))
       {
         return;
       }
-
+      
+      BeamLogger.LogInfo($"Sending final analytics for session {BeamClient.CurrentSession?.Id}");
+      
       this.SendGazeEvents();
 
       IEnumerable<ICreateEvent> audioEndEvents = this.currentAudioEventReferences.Select(kvp =>
@@ -158,7 +177,14 @@ namespace Beam.Runtime.Client.Managers
         LogEvents(avEvents);
       }
 
-      await BeamClient.Sdk.Session.StopSessionAsync(BeamClient.CurrentSession?.Id);
+      this.ready = false;
+      
+      BeamLogger.LogInfo($"Analytics stopped for session {BeamClient.CurrentSession?.Id}");
+    }
+    
+    private void OnApplicationQuit()
+    {
+      this.TrackSessionStop();
     }
 
     private void TrackPlayer()

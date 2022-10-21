@@ -75,7 +75,7 @@ namespace Beam.Editor.UI.Components
       VisualElement toolbar = new VisualElement();
       toolbar.AddToClassList("beam-tab-control");
 
-      List<AssetKind> kinds = Enum.GetValues(typeof(AssetKind)).Cast<AssetKind>().ToList();
+      List<AssetKind> kinds = Enum.GetValues(typeof(AssetKind)).Cast<AssetKind>().Where(ak => data.ShowExperimentalFeatures || ak != AssetKind.Data).ToList();
 
       kinds.ForEach(assetKind => toolbar.Add(TabButton(beamWindow, data.SelectedAssetKind, assetKind)));
 
@@ -171,10 +171,23 @@ namespace Beam.Editor.UI.Components
       unitHeader.Add(imageWrapper);
 
       unitHeader.Add(unitInfo);
+      
+      // DATA SLOT SCHEMA NAMES
+
+      if (kind == AssetKind.Data)
+      {
+        IDataSchema schema = data.GetDataSchemaById(projectUnit.DataMetadata.DataSchemaId);
+
+        VisualElement schemaDetails = new VisualElement().WithClass("beam-schema-details");
+        schemaDetails.Add(new Label("Schema Name").WithClass("beam-schema-detail-header"));
+        schemaDetails.Add(new Label(schema?.Name ?? ""));
+        
+        unitHeader.Add(schemaDetails);
+      }
 
       // UNIT QUALITIES
       List<SimpleQuality> qualities = data.GetQualitiesForKind(kind);
-      if (kind != AssetKind.Audio)
+      if (kind != AssetKind.Audio && kind != AssetKind.Data)
       {
         VisualElement qualityControls = new VisualElement().WithClass("beam-quality-controls");
         qualityControls.Add(new Label("LOD quality levels"));

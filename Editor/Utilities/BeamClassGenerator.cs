@@ -32,13 +32,15 @@ namespace Beam.Editor.Utilities
       name = rgx.Replace(name, "");
 
       // Prefix with _ if starts with a number
-      if (!Char.IsLetter(name[0]))
+      if (!char.IsLetter(name[0]))
       {
         name = $"_{name}";
       }
 
       // Replace spaces
-      return name.Replace(" ", "_");
+      // Replace hyphens - need to validate that these are not added in the web
+      // https://rocketmakers.atlassian.net/browse/BM-839
+      return name.Replace(" ", "_").Replace('-', '_');
     }
     private static string ProcessPropertyValue(string name)
     {

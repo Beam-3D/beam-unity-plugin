@@ -1,9 +1,11 @@
 ﻿using Beam.Runtime.Client.Loaders.Events;
 using Beam.Runtime.Client.Units;
 using Beam.Runtime.Client.Units.Events;
+using UnityEngine;
 
 namespace Beam.Runtime.Client.Loaders.Base
 {
+  [RequireComponent(typeof(BeamThreeDimensionalUnitInstance))]
   public abstract class BeamThreeDimensionalUnitLoader : BeamLoader
   {
     public ThreeDimensionalLoadedEvent OnThreeDimensionalUnitLoaded;

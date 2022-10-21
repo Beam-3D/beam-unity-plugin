@@ -76,13 +76,13 @@ namespace Beam.Runtime.Client.Units
       this.ProjectUnit.LastFulfillmentChecksum = "";
     }
 
-    public void CallFulfill()
+    public void CallFulfill(List<string> dynamicTags = null)
     {
       if (this.ProjectUnit == null || string.IsNullOrWhiteSpace(this.ProjectUnit.Unit.Id))
       {
         return;
       }
-      this.fulfillmentManager.RunManualFulfillment(new List<BeamUnitInstance> { this });
+      this.fulfillmentManager.RunManualFulfillment(new List<BeamUnitInstance> { this }, dynamicTags);
     }
 
     public virtual void OnDestroy()

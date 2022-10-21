@@ -1,4 +1,3 @@
-﻿using System;
 using System.Globalization;
 using System.Linq;
 using Beam.Editor.Managers;
@@ -10,7 +9,6 @@ using Beam.Runtime.Sdk.Model;
 using Beam.Runtime.Sdk.Utilities;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Video;
 using ProjectUnit = Beam.Runtime.Sdk.Model.ProjectUnit;
 
 namespace Beam.Editor.Editors
@@ -96,35 +94,31 @@ namespace Beam.Editor.Editors
           this.SelectedUnitIndex = EditorGUILayout.Popup(this.SelectedUnitIndex, unitNames.ToArray());
           EditorGUILayout.Space(5);
 
-          if (this.SelectedUnitIndex != 0)
+          if (this.SelectedUnitIndex == 0)
           {
-            var selectedUnit = units[this.SelectedUnitIndex - 1];
-
-            var selectedProjectUnit = areaUnits.ProjectUnits.FirstOrDefault(pu => pu.Unit.Id == selectedUnit.Unit.Id);
-            System.Collections.Generic.List<IProjectUnitInstance> instances = selectedProjectUnit.Unit.Instances.Where(ins => !BeamEditorInstanceManager.IsInstancePlaced(ins)).ToList();
-            if (!instances.Any())
-            {
-              GUILayout.Label($"All of this Units instances have been placed.", EditorStyles.boldLabel);
-              return;
-            }
-
-            var instance = instances.FirstOrDefault();
-            this.scriptInstance.ProjectUnit = selectedProjectUnit;
-            this.scriptInstance.UnitInstance = instance;
-
-            // Init LOD Qualities
-            var qualities = this.beamData.GetQualitiesForKind(this.kind);
-            string defaultMinQualityId = !string.IsNullOrWhiteSpace(selectedProjectUnit.MinQualityId) ? selectedProjectUnit.MinQualityId : qualities.LastOrDefault().Id;
-            string defaultMaxQualityId = !string.IsNullOrWhiteSpace(selectedProjectUnit.MaxQualityId) ? selectedProjectUnit.MaxQualityId : qualities.LastOrDefault().Id;
-
-            BeamEditorInstanceManager.UpdatePlacements();
+            return;
           }
+          
+          var selectedUnit = units[this.SelectedUnitIndex - 1];
+
+          var selectedProjectUnit = areaUnits.ProjectUnits.FirstOrDefault(pu => pu.Unit.Id == selectedUnit.Unit.Id);
+          System.Collections.Generic.List<IProjectUnitInstance> instances = selectedProjectUnit?.Unit.Instances.Where(ins => !BeamEditorInstanceManager.IsInstancePlaced(ins)).ToList();
+          if (instances?.Any() != true)
+          {
+            GUILayout.Label($"All of this Units instances have been placed.", EditorStyles.boldLabel);
+            return;
+          }
+
+          var instance = instances.FirstOrDefault();
+          this.scriptInstance.ProjectUnit = selectedProjectUnit;
+          this.scriptInstance.UnitInstance = instance;
+
+          BeamEditorInstanceManager.UpdatePlacements();
         }
       }
       else
       {
         this.SelectedUnitIndex = 0;
-        //this.selectedInstanceIndex = 0;
       }
     }
 
@@ -171,7 +165,8 @@ namespace Beam.Editor.Editors
         case AssetKind.Audio:
           this.RenderAudioUnitProperties();
           break;
-        default:
+        case AssetKind.Data:
+          this.RenderDataProperties();
           break;
       }
 
@@ -211,15 +206,13 @@ namespace Beam.Editor.Editors
 
       var qualities = this.beamData.GetQualitiesForKind(this.kind);
 
-      string minQualityId = !string.IsNullOrWhiteSpace(projectUnit.MinQualityId) ? projectUnit.MinQualityId : qualities.LastOrDefault().Id;
-      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault().Id;
-
-      BeamImageUnitInstance imageInstance = this.scriptInstance as BeamImageUnitInstance;
+      string minQualityId = !string.IsNullOrWhiteSpace(projectUnit.MinQualityId) ? projectUnit.MinQualityId : qualities.LastOrDefault()?.Id;
+      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault()?.Id;
 
       GUILayout.Label("LOD Quality levels", EditorStyles.boldLabel);
       GUILayout.Label("An asset must have a variant matching both of these quality levels for the instance to be fulfilled.", EditorStyles.helpBox);
-      EditorGUILayout.LabelField("Max LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId).Name, EditorStyles.boldLabel);
-      EditorGUILayout.LabelField("Min LOD quality", qualities.FirstOrDefault(x => x.Id == minQualityId).Name, EditorStyles.boldLabel);
+      EditorGUILayout.LabelField("Max LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId)?.Name ?? "", EditorStyles.boldLabel);
+      EditorGUILayout.LabelField("Min LOD quality", qualities.FirstOrDefault(x => x.Id == minQualityId)?.Name ?? "", EditorStyles.boldLabel);
       this.scriptInstance.ProjectUnit.LodDistance = EditorGUILayout.FloatField("Unit LOD distance", this.scriptInstance.ProjectUnit.LodDistance);
       GUILayout.Space(10);
       GUILayout.Label($"Image specific values", EditorStyles.boldLabel);
@@ -234,11 +227,11 @@ namespace Beam.Editor.Editors
       var projectUnit = this.scriptInstance.ProjectUnit;
       var qualities = this.beamData.GetQualitiesForKind(this.kind);
 
-      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault().Id;
+      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault()?.Id;
 
       GUILayout.Label("LOD Quality level", EditorStyles.boldLabel);
       GUILayout.Label("An asset must have a variant this quality level for the instance to be fulfilled.", EditorStyles.helpBox);
-      EditorGUILayout.LabelField("LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId).Name, EditorStyles.boldLabel);
+      EditorGUILayout.LabelField("LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId)?.Name ?? "", EditorStyles.boldLabel);
       this.scriptInstance.ProjectUnit.LodDistance = EditorGUILayout.FloatField("Unit LOD distance", this.scriptInstance.ProjectUnit.LodDistance);
       GUILayout.Label("Video will be paused beyond this distance.", EditorStyles.helpBox);
       GUILayout.Space(10);
@@ -255,15 +248,13 @@ namespace Beam.Editor.Editors
       var projectUnit = this.scriptInstance.ProjectUnit;
       var qualities = this.beamData.GetQualitiesForKind(this.kind);
 
-      string minQualityId = !string.IsNullOrWhiteSpace(projectUnit.MinQualityId) ? projectUnit.MinQualityId : qualities.LastOrDefault().Id;
-      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault().Id;
-
-      BeamThreeDimensionalUnitInstance threeDimensionalInstance = (this.scriptInstance as BeamThreeDimensionalUnitInstance);
+      string minQualityId = !string.IsNullOrWhiteSpace(projectUnit.MinQualityId) ? projectUnit.MinQualityId : qualities.LastOrDefault()?.Id;
+      string maxQualityId = !string.IsNullOrWhiteSpace(projectUnit.MaxQualityId) ? projectUnit.MaxQualityId : qualities.LastOrDefault()?.Id;
 
       GUILayout.Label("LOD Quality levels", EditorStyles.boldLabel);
       GUILayout.Label("An asset must have a variant matching both of these quality levels for the instance to be fulfilled.", EditorStyles.helpBox);
-      EditorGUILayout.LabelField("Max LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId).Name, EditorStyles.boldLabel);
-      EditorGUILayout.LabelField("Min LOD quality", qualities.FirstOrDefault(x => x.Id == minQualityId).Name, EditorStyles.boldLabel);
+      EditorGUILayout.LabelField("Max LOD quality", qualities.FirstOrDefault(x => x.Id == maxQualityId)?.Name ?? "", EditorStyles.boldLabel);
+      EditorGUILayout.LabelField("Min LOD quality", qualities.FirstOrDefault(x => x.Id == minQualityId)?.Name ?? "", EditorStyles.boldLabel);
       this.scriptInstance.ProjectUnit.LodDistance = EditorGUILayout.FloatField("Unit LOD distance", this.scriptInstance.ProjectUnit.LodDistance);
       GUILayout.Space(10);
       GUILayout.Label($"Three Dimensional specific values", EditorStyles.boldLabel);
@@ -282,6 +273,16 @@ namespace Beam.Editor.Editors
       EditorGUILayout.LabelField("Max length", $"{projectUnit.AudioMetadata.MaxLengthInSeconds} seconds", EditorStyles.boldLabel);
       this.scriptInstance.ProjectUnit.LodDistance = EditorGUILayout.FloatField("Unit LOD distance", this.scriptInstance.ProjectUnit.LodDistance);
       GUILayout.Label("Audio will be paused beyond this distance.", EditorStyles.helpBox);
+    }
+
+    private void RenderDataProperties()
+    {
+      var projectUnit = this.scriptInstance.ProjectUnit;
+      
+      GUILayout.Label($"Data specific values", EditorStyles.boldLabel);
+
+      IDataSchema schema = this.beamData.GetDataSchemaById(projectUnit.DataMetadata.DataSchemaId);
+      EditorGUILayout.LabelField("Schema Name", $"{schema?.Name ?? ""}", EditorStyles.boldLabel);
     }
 
 
@@ -313,47 +314,47 @@ namespace Beam.Editor.Editors
     private bool showEvents;
     private void RenderEventProperties()
     {
-      var projectUnit = this.scriptInstance;
-
       this.showEvents = EditorGUILayout.Foldout(this.showEvents, "Events");
 
-      if (this.showEvents)
+      if (!this.showEvents)
       {
-        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnFulfillmentUpdated"));
-        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnLodStatusChanged"));
-
-        // Get specific unit type properties
-
-        // Image
-        var onImageUnitFulfilled = this.serializedObject.FindProperty("OnImageUnitFulfilled");
-        if (onImageUnitFulfilled != null)
-        {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnImageUnitFulfilled"));
-        }
-
-        // ThreeDimensional
-        var onThreeDimensionalUnitFulfilled = this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled");
-        if (onThreeDimensionalUnitFulfilled != null)
-        {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled"));
-        }
-
-        // Audio
-        var onAudioUnitFulfilled = this.serializedObject.FindProperty("OnAudioUnitFulfilled");
-        if (onAudioUnitFulfilled != null)
-        {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnAudioUnitFulfilled"));
-        }
-
-        // Video
-        var onVideoUnitFulfilled = this.serializedObject.FindProperty("OnVideoUnitFulfilled");
-        if (onVideoUnitFulfilled != null)
-        {
-          EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnVideoUnitFulfilled"));
-        }
-
-        this.serializedObject.ApplyModifiedProperties();
+        return;
       }
+      
+      EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnFulfillmentUpdated"));
+      EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnLodStatusChanged"));
+
+      // Get specific unit type properties
+
+      // Image
+      var onImageUnitFulfilled = this.serializedObject.FindProperty("OnImageUnitFulfilled");
+      if (onImageUnitFulfilled != null)
+      {
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnImageUnitFulfilled"));
+      }
+
+      // ThreeDimensional
+      var onThreeDimensionalUnitFulfilled = this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled");
+      if (onThreeDimensionalUnitFulfilled != null)
+      {
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnThreeDimensionalUnitFulfilled"));
+      }
+
+      // Audio
+      var onAudioUnitFulfilled = this.serializedObject.FindProperty("OnAudioUnitFulfilled");
+      if (onAudioUnitFulfilled != null)
+      {
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnAudioUnitFulfilled"));
+      }
+
+      // Video
+      var onVideoUnitFulfilled = this.serializedObject.FindProperty("OnVideoUnitFulfilled");
+      if (onVideoUnitFulfilled != null)
+      {
+        EditorGUILayout.PropertyField(this.serializedObject.FindProperty("OnVideoUnitFulfilled"));
+      }
+
+      this.serializedObject.ApplyModifiedProperties();
     }
 
     private void ResetSelectedUnit()

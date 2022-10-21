@@ -68,6 +68,12 @@ namespace Beam.Runtime.Client.Managers
             HighModelQualityId = maxQualityId
           };
           break;
+        case AssetKind.Data:
+          metadata = new IDataFulfillmentRequestMetadata
+          {
+            Kind = AssetKindData.Data,
+          };
+          break;
       }
 
       return metadata;
@@ -214,7 +220,7 @@ namespace Beam.Runtime.Client.Managers
 
       this.isFulfilling = false;
     }
-    public async void RunManualFulfillment(List<BeamUnitInstance> unitInstances)
+    public async void RunManualFulfillment(List<BeamUnitInstance> unitInstances, List<string> dynamicTags = null)
     {
       BeamLogger.LogInfo("Running manual fulfillment");
       if (BeamClient.CurrentSession == null || string.IsNullOrWhiteSpace(BeamClient.CurrentSession.Id))
@@ -223,9 +229,18 @@ namespace Beam.Runtime.Client.Managers
         return;
       }
 
+      HashSet<string> dynamicTagSet = new HashSet<string>(BeamClient.RuntimeData.DynamicTags);
+      dynamicTagSet.UnionWith(BeamClient.ActiveDynamicTags);
+
+      if (dynamicTags != null)
+      {
+        dynamicTagSet.UnionWith(dynamicTags);
+      }
+
       IFulfillmentRequest request = new IFulfillmentRequest
       {
         SessionId = BeamClient.CurrentSession.Id,
+        DynamicTags = dynamicTagSet.ToList(),
         Units = new List<IUnitFulfillmentRequest>(unitInstances.Select(unitInstance =>
         {
           var kind = unitInstance.ProjectUnit.Kind;
@@ -234,12 +249,17 @@ namespace Beam.Runtime.Client.Managers
           IUnitFulfillmentRequest instance = new IUnitFulfillmentRequest
           {
             UnitId = projectUnit.Unit.Id,
-            Metadata = this.BuildMetadata(kind, projectUnit.MinQualityId, projectUnit.MaxQualityId)
+            Metadata = this.BuildMetadata(kind, projectUnit.MinQualityId, projectUnit.MaxQualityId),
           };
 
           return instance;
         }))
       };
+
+      if (!string.IsNullOrWhiteSpace(BeamClient.RuntimeData.ProjectApiKey))
+      {
+        request.ProjectApiKey = BeamClient.RuntimeData.ProjectApiKey;
+      }
 
       unitInstances.ForEach(this.HandleFulfillmentStartEvent);
 

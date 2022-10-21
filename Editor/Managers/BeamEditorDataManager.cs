@@ -148,6 +148,7 @@ namespace Beam.Editor.Managers
       async Task GetLocations() => BeamClient.Data.Locations = await BeamClient.Sdk.Metadata.GetAllLocationsAsync();
       async Task GetDevices() => BeamClient.Data.Devices = new List<string>((await BeamClient.Sdk.Metadata.GetAllDevicesAsync()).Select(x => x.Name));
 
+      
       // TODO: make this work for >100 tags
       ITagQuery userTagQuery = new ITagQuery
       {
@@ -167,6 +168,12 @@ namespace Beam.Editor.Managers
         Page = "1",
         PageSize = 100
       };
+      
+      IDataSchemaQuery dataSchemaQuery = new IDataSchemaQuery
+      {
+        Page = "1",
+        PageSize = 100
+      };
 
       async Task GetUserTags() =>
         BeamClient.RuntimeData.UserTags = (await BeamClient.Sdk.Metadata.SearchTagsAsync(userTagQuery)).Items;
@@ -177,6 +184,9 @@ namespace Beam.Editor.Managers
       async Task GetMetadataKeys() => BeamClient.RuntimeData.CustomMetadataKeys =
         (await BeamClient.Sdk.Metadata.SearchCustomMetadataKeysAsync(customMetadataKeyQuery))
         .Items;
+
+      async Task GetDataSchemas() => BeamClient.Data.DataSchemas =
+        (await BeamClient.Sdk.Metadata.SearchDataSchemasAsync(dataSchemaQuery)).Items;
 
       try
       {
@@ -191,7 +201,8 @@ namespace Beam.Editor.Managers
           GetLocations(),
           GetDevices(),
           GetUserTags(),
-          GetMetadataKeys()
+          GetMetadataKeys(),
+          GetDataSchemas()
         );
       }
       finally

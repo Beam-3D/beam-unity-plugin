@@ -9,6 +9,7 @@ using Beam.Runtime.Sdk.Generated.Model;
 using UnityEngine;
 using Beam.Runtime.Client.Utilities;
 using System.IO;
+using Beam.Runtime.Client.Managers;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -21,12 +22,16 @@ namespace Beam.Runtime.Client
     public Gender? Gender;
     public string DateOfBirth;
     public string[] UserTagIds;
+    public bool CommenceAnalyticsOnSessionStart = false;
   }
+  
   public static class BeamClient
   {
     public static readonly BeamSdk Sdk;
     public static readonly BeamData Data;
     public static readonly BeamRuntimeData RuntimeData;
+    public static readonly List<string> ActiveDynamicTags = new List<string>();
+    
     public static ISession CurrentSession
     {
       get { return RuntimeData.CurrentSession; }
@@ -89,8 +94,6 @@ namespace Beam.Runtime.Client
       // Session already exists
       if (!string.IsNullOrEmpty(CurrentSession?.Id))
       {
-        BeamManagerHandler.GetAnalyticsManager().Init();
-        
         if (RuntimeData.AutoStartFulfillment)
         {
           StartAutomaticFulfillment();
@@ -152,10 +155,21 @@ namespace Beam.Runtime.Client
         }
       }
 
+      if (!string.IsNullOrWhiteSpace(RuntimeData.ProjectApiKey))
+      {
+        sessionRequest.ProjectApiKey = RuntimeData.ProjectApiKey;
+      }
+
       CurrentSession = await Sdk.Session.StartSessionAsync(sessionRequest);
 
-      BeamManagerHandler.GetAnalyticsManager().Init();
+      BeamLogger.LogInfo($"Session Started with ID {CurrentSession.Id}");
 
+      if (parameters != null && parameters.CommenceAnalyticsOnSessionStart)
+      {
+        BeamLogger.LogInfo($"Analytics set to start on session start.");
+        StartAnalytics();
+      }
+      
       if (RuntimeData.AutoStartFulfillment)
       {
         StartAutomaticFulfillment();
@@ -172,6 +186,8 @@ namespace Beam.Runtime.Client
         BeamLogger.LogError("There is no current running session so it cannot be stopped");
         return;
       }
+      
+      BeamLogger.LogInfo($"Stopping session with ID {CurrentSession.Id}");
       await Sdk.Session.StopSessionAsync(CurrentSession.Id);
       BeamManagerHandler.GetAnalyticsManager().TrackSessionStop();
     }
@@ -239,7 +255,7 @@ namespace Beam.Runtime.Client
     /// <summary>
     /// Removes a tag from the existing session by its ID. Cached server data in RuntimeData is not checked
     /// </summary>
-    public static async Task RemovesSessionUserTagById(string tagId)
+    public static async Task RemoveSessionUserTagById(string tagId)
     {
       if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession?.Id))
       {
@@ -249,6 +265,41 @@ namespace Beam.Runtime.Client
 
       await Sdk.Session.DeleteTagAsync(CurrentSession?.Id, tagId);
       BeamLogger.LogInfo($"User tag with ID '{tagId}' removed from current session");
+    }
+
+    /// <summary>
+    /// Adds a dynamic tag to future fulfillment requests
+    /// </summary>
+    /// <param name="tag"></param>
+    public static void AddDynamicTag(string tag)
+    {
+      if (!RuntimeData.DynamicTags.Contains(tag) && !ActiveDynamicTags.Contains(tag))
+      {
+        BeamLogger.LogInfo($"Adding dynamic tag \"{tag}\" to future fulfillment requests");
+        ActiveDynamicTags.Add(tag);
+        return;
+      }
+      BeamLogger.LogInfo($"Failed to add dynamic tag \"{tag}\"; tag already exists");
+    }
+    
+    /// <summary>
+    /// Removes a dynamic tag from future fulfillment requests
+    /// </summary>
+    /// <param name="tag"></param>
+    public static void RemoveDynamicTag(string tag)
+    {
+      if (ActiveDynamicTags.Contains(tag))
+      {
+        ActiveDynamicTags.Remove(tag);
+        BeamLogger.LogInfo($"Dynamic tag \"{tag}\" successfully removed" );
+        return;
+      } 
+      if(RuntimeData.DynamicTags.Contains(tag))
+      {
+        BeamLogger.LogInfo($"Failed to remove dynamic tag \"{tag}\"; Tag included in BeamRuntimeData");
+        return;
+      }
+      BeamLogger.LogInfo($"Failed to remove dynamic tag \"{tag}\"; tag not currently in use");
     }
 
 
@@ -269,19 +320,55 @@ namespace Beam.Runtime.Client
     /// <summary>
     /// Runs fulfillment for the specified Unit(s) by id
     /// </summary>
-    public static void StartManualFulfillment(BeamUnitInstance beamUnitInstance)
+    /// <param name="beamUnitInstance">The instance to fulfill</param>
+    /// <param name="dynamicTags">Optional dynamic tags to apply for fulfillment</param>
+    public static void StartManualFulfillment(BeamUnitInstance beamUnitInstance, List<string> dynamicTags = null)
     {
       var fulfillmentManager = BeamManagerHandler.GetFulfillmentManager();
-      fulfillmentManager.RunManualFulfillment(new List<BeamUnitInstance> { beamUnitInstance });
+      fulfillmentManager.RunManualFulfillment(new List<BeamUnitInstance> { beamUnitInstance }, dynamicTags);
     }
 
     /// <summary>
     /// Runs fulfillment for the specified Unit(s) by id
     /// </summary>
-    public static void StartManualFulfillment(List<BeamUnitInstance> beamUnitInstances)
+    /// <param name="beamUnitInstances">The instances to fulfill</param>
+    /// <param name="dynamicTags">Optional dynamic tags to apply for fulfillment</param>
+    public static void StartManualFulfillment(List<BeamUnitInstance> beamUnitInstances, List<string> dynamicTags = null)
     {
       var fulfillmentManager = BeamManagerHandler.GetFulfillmentManager();
-      fulfillmentManager.RunManualFulfillment(beamUnitInstances);
+      fulfillmentManager.RunManualFulfillment(beamUnitInstances, dynamicTags);
+    }
+
+    /// <summary>
+    /// Starts the collection of analytics data.
+    /// </summary>
+    /// <remarks>
+    /// A Session must have been started in order to collect analytics.
+    /// 
+    /// User consent should be obtained before collecting analytics data.
+    /// </remarks>
+    public static void StartAnalytics()
+    {
+      if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession.Id))
+      {
+        BeamLogger.LogError("Session must be started for analytics to run.");
+        return;
+      }
+      
+      BeamAnalyticsManager analyticsManager = BeamManagerHandler.GetAnalyticsManager();
+      analyticsManager.Init();
+    }
+    
+    public static void StopAnalytics()
+    {
+      if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession.Id))
+      {
+        BeamLogger.LogError("No current session, analytics are not running.");
+        return;
+      }
+      
+      BeamAnalyticsManager analyticsManager = BeamManagerHandler.GetAnalyticsManager();
+      analyticsManager.StopAnalytics();
     }
   }
 }

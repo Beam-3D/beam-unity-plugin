@@ -1,7 +1,6 @@
-﻿using Beam.Runtime;
-using Beam.Runtime.Client;
+﻿using Beam.Runtime.Client;
 using Beam.Runtime.Client.Managers;
-using Beam.Runtime.Sdk.Data;
+using Beam.Runtime.Sdk.Generated.Model;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,11 +18,7 @@ namespace Beam.Editor.Editors
 
     public override void OnInspectorGUI()
     {
-
-      GUI.enabled = BeamClient.CurrentSession == null;
       BeamClient.RuntimeData.AutoStartFulfillment = GUILayout.Toggle(BeamClient.RuntimeData.AutoStartFulfillment, "Fulfill on session start");
-      GUI.enabled = true;
-
       bool canStartFulfillment = Application.isPlaying && BeamClient.CurrentSession != null;
 
       GUI.enabled = canStartFulfillment;
@@ -35,7 +30,7 @@ namespace Beam.Editor.Editors
 
       if (Application.isPlaying && this.scriptInstance.FulfillmentResponse != null && this.scriptInstance.FulfillmentResponse.Units != null)
       {
-        var fulfillment = this.scriptInstance.FulfillmentResponse;
+        IFulfillmentResponse fulfillment = this.scriptInstance.FulfillmentResponse;
 
         GUILayout.Label("Fulfillment details", EditorStyles.boldLabel);
         EditorGUILayout.LabelField("Fulfilled Units", fulfillment.Units.Count.ToString());

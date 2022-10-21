@@ -1,6 +1,6 @@
 /* DEFAULT & SHARED UI STYLES */
 .light-bg {
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .dark-bg {
@@ -117,7 +117,7 @@
 .beam-settings-button .unity-text-element {
   background-image: resource('Images/beam_icon_cog');
   -unity-background-scale-mode: scale-to-fit;
-  color: transparent;
+  color: rgba(0, 0, 0, 0);
 }
 
 /* LOGIN UI */
@@ -127,10 +127,7 @@
 .beam-logo-wrapper {
   align-items: center;
   background-image: resource('Images/placeholder');
-  margin-left: -20px;
-  margin-right: -20px;
-  margin-top: -20px;
-  margin-bottom: 30px;
+  margin: -20px -20px 30px;
 }
 
 .beam-logo {
@@ -139,7 +136,7 @@
 }
 
 .beam-environment-label {
-  bottom: 0px;
+  bottom: 0;
   font-size: 12px;
 }
 
@@ -366,6 +363,10 @@
   width: 100px;
 }
 
+.beam-fulfillment-mode .unity-enum-field {
+  margin-left: 0;
+}
+
 .beam-fulfillment-mode .unity-base-field .unity-label {
   width: 50px;
   min-width: 0;
@@ -379,13 +380,23 @@
 .beam-help-text {
   margin: 1px 3px 6px 3px;
 }
-.beam-fulfillment-mode .unity-base-field .unity-label{
-    width: 50px;
-    min-width: 0;
-}
 
-.beam-unit-header-ratio-label{
+.beam-unit-header-ratio-label {
     -unity-text-align: middle-center;
     width: 48px;
     padding-top: 3px;
+}
+
+.beam-schema-details {
+  max-width: 220px;
+  min-width: 0;
+  margin-right: 10px;
+}
+
+.beam-schema-details .unity-label {
+  white-space: normal;
+}
+
+.beam-schema-details .beam-schema-detail-header {
+  margin-bottom: 3px;
 }

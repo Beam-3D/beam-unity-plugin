@@ -23,7 +23,6 @@ namespace Beam.Runtime.Client.Loaders
   public class BeamGLTFastLoader : BeamThreeDimensionalUnitLoader
   {
     public GameObject Placeholder;
-    private BeamThreeDimensionalUnitInstance beamThreeDimensionalUnitInstance;
     private GameObject currentPlaceholder;
     private readonly GltfAsset gLtfAsset;
     private string lastLowQualityUrl;
@@ -34,9 +33,8 @@ namespace Beam.Runtime.Client.Loaders
     private new void Awake()
     {
       base.Awake();
-
-      this.beamThreeDimensionalUnitInstance = this.GetComponent<BeamThreeDimensionalUnitInstance>();
-      this.beamThreeDimensionalUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
+      
+      this.BeamThreeDimensionalUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
 
       if (this.Placeholder == null)
       {
