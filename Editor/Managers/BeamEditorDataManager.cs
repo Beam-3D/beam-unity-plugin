@@ -50,8 +50,6 @@ namespace Beam.Editor.Managers
     {
       BeamEditorAuthManager.LoginStatusChanged += HandleLoginEvent;
       BeamEditorInstanceManager.PlacedInstancesChanged += HandlePlacedInstancesChanged;
-
-      Init();
     }
 
     private static async void HandleLoginEvent(object sender, LoginEventStatus loginEventStatus)
@@ -83,7 +81,7 @@ namespace Beam.Editor.Managers
       DataUpdated?.Invoke(null, DataUpdateType.Placements);
     }
 
-    private static async void Init()
+    public static async void Init()
     {
       if (Application.isPlaying)
       {

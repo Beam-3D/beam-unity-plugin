@@ -63,6 +63,7 @@ namespace Beam.Editor.UI
     public void Awake()
     {
       this.Init();
+      BeamEditorDataManager.Init();
     }
 
 

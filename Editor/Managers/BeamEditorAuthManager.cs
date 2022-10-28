@@ -106,8 +106,13 @@ namespace Beam.Editor.Managers
       FileHelper.DeleteLoginData();
       ServerError = false;
       LoginStatusChanged?.Invoke(null, LoginEventStatus.UserLoggedOut);
-      // Runtime data does not need to be cleared on logout as it's public information
-      BeamClient.Data.ClearData();
+      
+      // If there's no data then there's nothing to clear.
+      if (BeamClient.Data)
+      {
+        // Runtime data does not need to be cleared on logout as it's public information
+        BeamClient.Data.ClearData();
+      }
     }
   }
 }

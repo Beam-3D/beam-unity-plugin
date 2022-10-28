@@ -1,6 +1,6 @@
 {
   "name": "com.beam.unity",
-  "version": "0.27.0-demo.6fb19dec",
+  "version": "0.28.0-demo.36c1e3c9",
   "displayName": "Beam for Unity",
   "description": "You will also need to add GLTFFast v4.6.0 via the instructions here https://github.com/atteneder/glTFast#installing",
   "unity": "2019.4",

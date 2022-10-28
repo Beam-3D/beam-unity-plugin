@@ -27,7 +27,13 @@ namespace Beam.Runtime.Client
   
   public static class BeamClient
   {
-    public static readonly BeamSdk Sdk;
+    public static BeamSdk Sdk
+    {
+      get
+      {
+        return beamSdk ?? (beamSdk = new BeamSdk());
+      }
+    }
     public static BeamData Data
     {
       get
@@ -44,6 +50,8 @@ namespace Beam.Runtime.Client
       }
     }
     public static readonly List<string> ActiveDynamicTags = new List<string>();
+
+    private static BeamSdk beamSdk;
     
     public static ISession CurrentSession
     {
@@ -55,12 +63,6 @@ namespace Beam.Runtime.Client
           RuntimeData.CurrentSession = value; 
         }
       }
-    }
-
-    static BeamClient()
-    {
-      BeamLogger.LogVerbose("Initializing BeamClient");
-      Sdk = new BeamSdk();
     }
 
     /// <summary>
