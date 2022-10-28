@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -37,6 +37,7 @@ namespace Beam.Editor.Managers
       {
         if (change == PlayModeStateChange.EnteredEditMode)
         {
+          BeamLogger.LogVerbose("Playmode state changed callback");
           UpdatePlacements();
         }
       };
@@ -55,6 +56,11 @@ namespace Beam.Editor.Managers
     {
       List<BeamUnitInstance> instancesInScene = Object.FindObjectsOfType<BeamUnitInstance>().Where(au => au.ProjectUnit != null).ToList();
 
+      if (!instancesInScene.Any() || PlacedInstances == null)
+      {
+        return;
+      }
+      
       List<BeamUnitInstance> removedInstances = PlacedInstances
         .Where(pi => instancesInScene.All(si => si.UnitInstance.Id != pi.UnitInstance.Id)).ToList();
       removedInstances.ForEach(instance => instance.InstanceDeleted -= HandleInstanceRemoved);
@@ -69,6 +75,12 @@ namespace Beam.Editor.Managers
 
     private static void UpdatePlacedUnits()
     {
+
+      if (!BeamClient.Data || PlacedInstances == null)
+      {
+        return;
+      }
+      
       PlacedUnits = PlacedInstances.Select(ins => ins.ProjectUnit).Distinct(new ProjectUnitEqualityComparer())
         .ToList();
 
@@ -94,6 +106,7 @@ namespace Beam.Editor.Managers
 
     private static void CheckCurrentSceneIsValid()
     {
+      BeamLogger.LogVerbose("Delay call callback");
       EditorApplication.delayCall -= CheckCurrentSceneIsValid;
 
       UpdatePlacedInstances();
@@ -104,11 +117,13 @@ namespace Beam.Editor.Managers
 
     private static void HandleSceneLoaded(Scene scene, OpenSceneMode openSceneMode)
     {
+      BeamLogger.LogVerbose("Handle scene loaded callback.");
       CheckCurrentSceneIsValid();
     }
 
     private static void CheckCurrentSceneIsValid(object sender, DataUpdateType dataUpdateType)
     {
+      BeamLogger.LogVerbose("Data updated callback.");
       if (dataUpdateType == DataUpdateType.Units)
       {
         CheckCurrentSceneIsValid();
@@ -200,7 +215,7 @@ namespace Beam.Editor.Managers
       beamUnit.ProjectUnit = projectUnit;
       beamUnit.UnitInstance = unitInstance;
 
-      BeamData beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+      BeamData beamData = SerializedDataManager.Data;
       IAspectRatio aspectRatio = projectUnit.GetAspectRatioId(beamData);
 
       // Handle aspect ratio
@@ -246,6 +261,11 @@ namespace Beam.Editor.Managers
 
     private static void CheckForRemovedInstances(bool hideWarning = false)
     {
+      if (!BeamClient.Data)
+      {
+        return;
+      }
+      
       List<BeamUnitInstance> removedInstances = PlacedInstances
         .Where(placedInstance => PlacedUnitExists(placedInstance) && !PlacedInstanceExists(placedInstance)).ToList();
 
@@ -294,13 +314,19 @@ namespace Beam.Editor.Managers
 
     private static bool PlacedUnitExists(BeamUnitInstance placedInstance)
     {
+      // Return true here so that errors are not thrown due to data missing.
+      if (!BeamClient.Data)
+      {
+        return true;
+      }
+      
       return BeamClient.Data.SceneUnits?.Any(sceneUnit =>
         sceneUnit.ProjectUnits.Any(pu => pu.Unit.Id == placedInstance.ProjectUnit.Unit.Id)) ?? false;
     }
 
     private static bool PlacedInstanceExists(BeamUnitInstance placedInstance)
     {
-      BeamData beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+      BeamData beamData = SerializedDataManager.Data;
       return beamData.SceneUnits?.Any(sceneUnit => sceneUnit.ProjectUnits.Any(pu =>
         pu.Unit.Instances.Any(instance => instance.Id == placedInstance.UnitInstance.Id))) ?? false;
     }

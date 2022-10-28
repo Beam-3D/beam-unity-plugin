@@ -76,7 +76,7 @@ namespace Beam.Editor.Utilities
     }
     private static async Task<string> UploadModelToStorage(string filename, byte[] model)
     {
-      ApiClient client = new ApiClient(Endpoint.GetEndpoints().ApiUrl, new TokenManager());
+      ApiClient client = new ApiClient(EndpointManager.GetEndpoints().ApiUrl, new TokenManager());
       StorageApi storageApi = new StorageApi(client, client, new Configuration());
       IFileCreationResult postResponse = await InitiateUploadModelToStorage(filename, model.Length, "model/gltf-binary", storageApi);
       await client.UploadByteArrayToStorage(model, bucketName, postResponse.Ticket);
@@ -85,7 +85,7 @@ namespace Beam.Editor.Utilities
 
     private static async Task<IScene> UploadSceneRepresentation(string sceneId, string storageTicket, IRepresentationMetadata metadata)
     {
-      ApiClient publishingApiClient = new ApiClient(Endpoint.GetEndpoints().ApiUrl, new TokenManager());
+      ApiClient publishingApiClient = new ApiClient(EndpointManager.GetEndpoints().ApiUrl, new TokenManager());
       ScenesApi sceneApi = new ScenesApi(publishingApiClient, publishingApiClient, new Configuration());
 
       var scene = await sceneApi.GetSceneByIdAsync(sceneId);

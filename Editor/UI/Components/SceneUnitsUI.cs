@@ -66,7 +66,7 @@ namespace Beam.Editor.UI.Components
         this.Add(new Label("This Area doesn't have any slots to place. Please go to the web portal to create some first.").WithClass("beam-no-data-label"));
 
         Button webLink = new Button { text = "Go to web portal" };
-        webLink.clicked += () => { Application.OpenURL(Endpoint.GetEndpoints().WebUrl); };
+        webLink.clicked += () => { Application.OpenURL(EndpointManager.GetEndpoints().WebUrl); };
         webLink.AddToClassList("beam-centered-button");
         this.Add(webLink);
         return;
@@ -101,7 +101,7 @@ namespace Beam.Editor.UI.Components
         noDataWrapper.Add(noSlotsLabel);
 
         Button webLink = new Button { text = "Go to web portal" };
-        webLink.clicked += () => { Application.OpenURL(Endpoint.GetEndpoints().WebUrl); };
+        webLink.clicked += () => { Application.OpenURL(EndpointManager.GetEndpoints().WebUrl); };
         webLink.AddToClassList("beam-centered-button");
         noDataWrapper.Add(webLink);
 

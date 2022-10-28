@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Beam.Editor.Managers;
 using Beam.Editor.UI.Components;
@@ -34,6 +35,7 @@ namespace Beam.Editor.UI
 
     private void Init()
     {
+      LoadOrInitData();
       BeamManagerHandler.CheckForManagers(true);
       this.RelinkManagers();
     }
@@ -46,14 +48,14 @@ namespace Beam.Editor.UI
     public void OnEnable()
     {
       this.minSize = new Vector2(700, 600);
-      UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode += this.HandleAreaChange;
+      UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode += this.HandleSceneChange;
       BeamEditorDataManager.DataUpdated += this.HandleDataUpdated;
       BeamEditorInstanceManager.PlacedInstancesChanged += this.HandlePlacedInstancesChanged;
     }
 
     public void OnDisable()
     {
-      UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode -= this.HandleAreaChange;
+      UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode -= this.HandleSceneChange;
       BeamEditorDataManager.DataUpdated -= this.HandleDataUpdated;
       BeamEditorInstanceManager.PlacedInstancesChanged -= this.HandlePlacedInstancesChanged;
     }
@@ -80,7 +82,7 @@ namespace Beam.Editor.UI
         // Check to see if the environment is still available.
         if (string.IsNullOrEmpty(Endpoint.AvailableEnvironments.FirstOrDefault(x => x == Endpoint.Environment)))
         {
-          Endpoint.Environment = Endpoint.AvailableEnvironments.FirstOrDefault();
+          Endpoint.Environment = EndpointManager.GetAvailableEnvironments().FirstOrDefault();
         }
       }
 
@@ -262,8 +264,38 @@ namespace Beam.Editor.UI
     {
       BeamEditorAuthManager.Logout(true);
     }
+    
+    private static void LoadOrInitData()
+    {
+      BeamLogger.LogVerbose("Initializing BeamData");
+      var loadedData = SerializedDataManager.Data;
 
-    private void HandleAreaChange(UnityEngine.SceneManagement.Scene prev, UnityEngine.SceneManagement.Scene next)
+      if (loadedData == null)
+      {
+        BeamLogger.LogInfo("BeamData not found; creating new instance of BeamData");
+        Directory.CreateDirectory($"Assets/Resources/Beam");
+        loadedData = ScriptableObject.CreateInstance<BeamData>();
+        AssetDatabase.CreateAsset(loadedData, "Assets/Resources/Beam/BeamData.asset");
+        AssetDatabase.SaveAssets();
+        BeamLogger.LogLevel = loadedData.LogLevel;
+      }
+
+      BeamLogger.LogVerbose("Initializing BeamRuntimeData");
+      var loadedRuntimeData = SerializedDataManager.RuntimeData;
+
+
+      if (loadedRuntimeData == null)
+      {
+        BeamLogger.LogInfo("BeamRuntimeData not found; creating new instance of BeamRuntimeData");
+        Directory.CreateDirectory($"Assets/Resources/Beam");
+        loadedRuntimeData = ScriptableObject.CreateInstance<BeamRuntimeData>();
+        loadedRuntimeData.ClearData();
+        AssetDatabase.CreateAsset(loadedRuntimeData, "Assets/Resources/Beam/BeamRuntimeData.asset");
+        AssetDatabase.SaveAssets();
+      }
+    }
+
+    private void HandleSceneChange(UnityEngine.SceneManagement.Scene prev, UnityEngine.SceneManagement.Scene next)
     {
       this.Init();
       this.Repaint();

@@ -4,6 +4,7 @@ using Beam.Runtime.Client;
 using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated;
 using Beam.Runtime.Sdk.Generated.Model;
+using Beam.Runtime.Sdk.Utilities;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -32,7 +33,7 @@ namespace Beam.Editor.UI.Components
         noProjectsLabel.AddToClassList("beam-header-center");
 
         Button webLink = new Button { text = "Go to web portal" };
-        webLink.clicked += () => { Application.OpenURL(Endpoint.GetEndpoints().WebUrl); };
+        webLink.clicked += () => { Application.OpenURL(EndpointManager.GetEndpoints().WebUrl); };
         webLink.AddToClassList("beam-centered-button");
 
         this.Add(noProjectsLabel);

@@ -33,7 +33,7 @@ namespace Beam.Runtime.Client.Managers
 
     private void OnEnable()
     {
-      this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+      this.beamData = SerializedDataManager.Data;
       this.subscribedToSelectionChange = false;
     }
 
@@ -152,7 +152,7 @@ namespace Beam.Runtime.Client.Managers
     {
       if (this.beamData == null)
       {
-        this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+        this.beamData = SerializedDataManager.Data;
       }
 
       string areaId = unit.ProjectUnit.Unit.SceneId;

@@ -3,6 +3,7 @@ using Beam.Editor.Managers;
 using Beam.Runtime.Client;
 using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated;
+using Beam.Runtime.Sdk.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace Beam.Editor.UI.Components
     public static readonly string BeamEnvironmentKey = "Beam-Environment";
     public SelectEnvironmentUI(bool forceLogout = false)
     {
-      System.Collections.Generic.List<string> endpoints = Endpoint.AvailableEnvironments.ToList();
+      System.Collections.Generic.List<string> endpoints = EndpointManager.GetAvailableEnvironments().ToList();
       if (endpoints.Count <= 1)
       {
         return;

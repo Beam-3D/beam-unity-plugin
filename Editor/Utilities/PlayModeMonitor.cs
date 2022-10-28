@@ -3,6 +3,7 @@ using Beam.Runtime.Client;
 using Beam.Runtime.Client.Loaders;
 using Beam.Runtime.Client.Units;
 using Beam.Runtime.Client.Utilities;
+using Beam.Editor.UI;
 using UnityEditor;
 using UnityEngine;
 

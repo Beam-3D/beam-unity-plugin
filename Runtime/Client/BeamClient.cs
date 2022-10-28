@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Beam.Runtime.Client.Units;
@@ -8,7 +8,6 @@ using Beam.Runtime.Sdk.Data;
 using Beam.Runtime.Sdk.Generated.Model;
 using UnityEngine;
 using Beam.Runtime.Client.Utilities;
-using System.IO;
 using Beam.Runtime.Client.Managers;
 
 #if UNITY_EDITOR
@@ -23,62 +22,45 @@ namespace Beam.Runtime.Client
     public string DateOfBirth;
     public string[] UserTagIds;
     public bool CommenceAnalyticsOnSessionStart = false;
+    public string[] ExternalIds;
   }
   
   public static class BeamClient
   {
     public static readonly BeamSdk Sdk;
-    public static readonly BeamData Data;
-    public static readonly BeamRuntimeData RuntimeData;
+    public static BeamData Data
+    {
+      get
+      {
+        return SerializedDataManager.Data;
+      }
+    }
+
+    public static BeamRuntimeData RuntimeData
+    {
+      get
+      {
+        return SerializedDataManager.RuntimeData;
+      }
+    }
     public static readonly List<string> ActiveDynamicTags = new List<string>();
     
     public static ISession CurrentSession
     {
-      get { return RuntimeData.CurrentSession; }
-      set { RuntimeData.CurrentSession = value; }
+      get { return RuntimeData ? RuntimeData.CurrentSession : null; }
+      set 
+      { 
+        if (RuntimeData)
+        {
+          RuntimeData.CurrentSession = value; 
+        }
+      }
     }
 
     static BeamClient()
     {
+      BeamLogger.LogVerbose("Initializing BeamClient");
       Sdk = new BeamSdk();
-      Data = LoadOrInitData();
-      RuntimeData = LoadOrInitRuntimeData();
-    }
-
-    private static BeamData LoadOrInitData()
-    {
-      var data = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
-
-#if UNITY_EDITOR
-      if (data == null)
-      {
-        Directory.CreateDirectory($"Assets/Resources/Beam");
-        data = ScriptableObject.CreateInstance<BeamData>();
-        AssetDatabase.CreateAsset(data, "Assets/Resources/Beam/BeamData.asset");
-        AssetDatabase.SaveAssets();
-        BeamLogger.LogLevel = data.LogLevel;
-      }
-#endif
-
-      return data;
-    }
-
-    private static BeamRuntimeData LoadOrInitRuntimeData()
-    {
-      var runtimeData = Resources.Load<BeamRuntimeData>(BeamAssetPaths.BEAM_RUNTIME_DATA_ASSET_PATH);
-
-#if UNITY_EDITOR
-      if (runtimeData == null)
-      {
-        Directory.CreateDirectory($"Assets/Resources/Beam");
-        runtimeData = ScriptableObject.CreateInstance<BeamRuntimeData>();
-        runtimeData.ClearData();
-        AssetDatabase.CreateAsset(runtimeData, "Assets/Resources/Beam/BeamRuntimeData.asset");
-        AssetDatabase.SaveAssets();
-      }
-#endif
-
-      return runtimeData;
     }
 
     /// <summary>
@@ -86,9 +68,9 @@ namespace Beam.Runtime.Client
     /// </summary>
     public static async void StartSession(SessionParameters parameters = null)
     {
-      if (string.IsNullOrWhiteSpace(RuntimeData.ProjectId))
+      if (!RuntimeData || (string.IsNullOrWhiteSpace(RuntimeData.ProjectId) && string.IsNullOrWhiteSpace(RuntimeData.ProjectApiKey)))
       {
-        BeamLogger.LogWarning("You must select a project before starting a session");
+        BeamLogger.LogWarning("A ProjectId or ProjectApiKey are usually required to start a session.");
       }
 
       // Session already exists
@@ -120,7 +102,8 @@ namespace Beam.Runtime.Client
         Consumer = new ICreatableConsumer
         {
           Language = Application.systemLanguage.ToString().Substring(0, 2).ToLower(),
-          Location = "GB"
+          Location = "GB",
+          ExternalIds = new List<string>()
         },
         UserTagIds = new List<string>()
       };
@@ -129,7 +112,7 @@ namespace Beam.Runtime.Client
       // Mocking is only supported in editor
       if (Application.isEditor)
       {
-        if (Data.MockSession != null && Data.MockDataEnabled)
+        if (Data && Data.MockSession != null && Data.MockDataEnabled)
         {
           sessionRequest = Data.GetSerializedMockData();
           sessionRequest.ProjectId = RuntimeData.ProjectId;
@@ -152,6 +135,10 @@ namespace Beam.Runtime.Client
         if (parameters.UserTagIds != null)
         {
           sessionRequest.UserTagIds = parameters.UserTagIds.ToList();
+        }
+        if (parameters.ExternalIds != null)
+        {
+          sessionRequest.Consumer.ExternalIds = parameters.ExternalIds.ToList();
         }
       }
 

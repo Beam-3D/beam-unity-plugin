@@ -32,7 +32,7 @@ namespace Beam.Editor.Editors
       }
       if (this.beamData == null)
       {
-        this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+        this.beamData = SerializedDataManager.Data;
       }
     }
     public override void OnInspectorGUI()

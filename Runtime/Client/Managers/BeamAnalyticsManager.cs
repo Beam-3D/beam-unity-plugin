@@ -126,6 +126,7 @@ namespace Beam.Runtime.Client.Managers
 
       this.StopAnalytics();
 
+      BeamLogger.LogInfo($"Stopping session {BeamClient.CurrentSession?.Id}");
       await BeamClient.Sdk.Session.StopSessionAsync(BeamClient.CurrentSession?.Id);
     }
     
@@ -374,7 +375,7 @@ namespace Beam.Runtime.Client.Managers
 
     public void LogConversionEvent(string instanceId, string fulfillmentId)
     {
-      if (BeamClient.CurrentSession?.Id == null || this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
+      if (BeamClient.CurrentSession?.Id == null || !this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
       {
         return;
       }
@@ -408,7 +409,7 @@ namespace Beam.Runtime.Client.Managers
 
     public void LogAudioEvent(string instanceId, string fulfillmentId, AudioEventActionKind actionKind)
     {
-      if (BeamClient.CurrentSession?.Id == null || this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
+      if (BeamClient.CurrentSession?.Id == null || !this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
       {
         return;
       }
@@ -473,7 +474,7 @@ namespace Beam.Runtime.Client.Managers
 
     public void LogVideoEvent(string instanceId, string fulfillmentId, VideoEventActionKind actionKind)
     {
-      if (BeamClient.CurrentSession?.Id == null || this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
+      if (BeamClient.CurrentSession?.Id == null || !this.ready || this.areaBoundsManager.AreaBoundsList.Count == 0)
       {
         return;
       }

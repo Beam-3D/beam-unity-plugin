@@ -14,7 +14,7 @@ namespace Beam.Editor.Utilities
     public int callbackOrder { get { return 0; } }
     public void OnPreprocessBuild(BuildReport report)
     {
-      BeamData data = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+      BeamData data = SerializedDataManager.Data;
       if (!data) return;
 
       bool threeDimensionalUnitInBeamData = data.SceneUnits.Any(su => su.ProjectUnits.Any(pu => pu.Kind == AssetKind.ThreeDimensional));

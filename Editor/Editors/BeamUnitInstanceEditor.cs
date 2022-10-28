@@ -24,7 +24,7 @@ namespace Beam.Editor.Editors
 
     public void OnEnable()
     {
-      this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
+      this.beamData = SerializedDataManager.Data;
 
       if (this.target == null)
       {

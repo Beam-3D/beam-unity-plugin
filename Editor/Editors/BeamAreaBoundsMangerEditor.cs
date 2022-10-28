@@ -20,8 +20,7 @@ namespace Beam.Editor.Editors
     public void OnEnable()
     {
       this.scriptInstance = (BeamAreaBoundsManager)this.target;
-      this.beamData = Resources.Load<BeamData>(BeamAssetPaths.BEAM_EDITOR_DATA_ASSET_PATH);
-      //this.instanceManager = FindObjectOfType<BeamInstanceManager>();
+      this.beamData = SerializedDataManager.Data;
     }
 
     public override void OnInspectorGUI()

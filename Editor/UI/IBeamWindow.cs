@@ -1,4 +1,4 @@
-﻿namespace Beam.Editor
+﻿namespace Beam.Editor.UI
 {
 
   public interface IBeamWindow
