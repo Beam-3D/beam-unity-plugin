@@ -1,17 +1,13 @@
 ﻿using Beam.Editor.Extensions;
 using Beam.Editor.Managers;
-using Beam.Runtime.Client.Utilities;
 using Beam.Runtime.Sdk.Generated.Model;
-using Beam.Runtime.Sdk.Model;
 using Beam.Runtime.Sdk.Utilities;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Beam.Editor.UI.Components
 {
   public class LoginUI : VisualElement
   {
-    //private BeamEditorDataManager dataManager;
     private readonly BeamWindow window;
 
     public LoginUI(BeamWindow beamWindow)

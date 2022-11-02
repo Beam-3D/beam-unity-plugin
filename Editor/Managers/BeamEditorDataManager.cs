@@ -27,7 +27,7 @@ namespace Beam.Editor.Managers
 
   internal static class BeamEditorDataManager
   {
-    public static ILoginRequest LoginRequest;
+    public static ILoginRequest LoginRequest = new ILoginRequest { Username = "", Password = "" };
     public static event EventHandler<DataUpdateType> DataUpdated;
     //public static event EventHandler ProjectChanged;
     public static event EventHandler FetchErrorThrown;
@@ -87,8 +87,6 @@ namespace Beam.Editor.Managers
       {
         return;
       }
-
-      LoginRequest = new ILoginRequest { Username = "", Password = "" };
 
       if (await BeamEditorAuthManager.CheckAuth())
       {
@@ -227,8 +225,16 @@ namespace Beam.Editor.Managers
       {
         // TODO: Update this so that unit error warnings don't show if a scene hasn't been selected yet.
         await GetAreas(BeamClient.Data.GetSelectedProject().Id);
+        await GetProjectApiKeys(BeamClient.Data.GetSelectedProject().Id);
+
+      
         DataUpdated?.Invoke(null, DataUpdateType.Areas);
       }
+    }
+
+    public static async Task GetProjectApiKeys(string projectId)
+    {
+      BeamClient.RuntimeData.ProjectApiKeys = await BeamClient.Sdk.Projects.GetPublicProjectApiKeysAsync(projectId);
     }
 
     public static async Task GetAreas(string projectId)
@@ -337,6 +343,7 @@ namespace Beam.Editor.Managers
       try
       {
         await GetAreas(project.Id);
+        await GetProjectApiKeys(project.Id);
       }
       catch
       {

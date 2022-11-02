@@ -70,7 +70,9 @@ namespace Beam.Runtime.Client
     /// </summary>
     public static async void StartSession(SessionParameters parameters = null)
     {
-      if (!RuntimeData || (string.IsNullOrWhiteSpace(RuntimeData.ProjectId) && string.IsNullOrWhiteSpace(RuntimeData.ProjectApiKey)))
+      bool hasApiKeys = RuntimeData.ProjectApiKeys.Any() && !string.IsNullOrEmpty(RuntimeData.ProjectApiKeys[0].ApiKey);
+      
+      if (!RuntimeData || (string.IsNullOrWhiteSpace(RuntimeData.ProjectId) && !hasApiKeys));
       {
         BeamLogger.LogWarning("A ProjectId or ProjectApiKey are usually required to start a session.");
       }
@@ -144,9 +146,9 @@ namespace Beam.Runtime.Client
         }
       }
 
-      if (!string.IsNullOrWhiteSpace(RuntimeData.ProjectApiKey))
+      if (hasApiKeys)
       {
-        sessionRequest.ProjectApiKey = RuntimeData.ProjectApiKey;
+        sessionRequest.ProjectApiKey = RuntimeData.ProjectApiKeys[0].ApiKey;
       }
 
       CurrentSession = await Sdk.Session.StartSessionAsync(sessionRequest);

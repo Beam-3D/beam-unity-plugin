@@ -255,10 +255,12 @@ namespace Beam.Runtime.Client.Managers
           return instance;
         }))
       };
+      
+      bool hasApiKeys = BeamClient.RuntimeData.ProjectApiKeys != null && BeamClient.RuntimeData.ProjectApiKeys.Any();
 
-      if (!string.IsNullOrWhiteSpace(BeamClient.RuntimeData.ProjectApiKey))
+      if (hasApiKeys && !string.IsNullOrWhiteSpace(BeamClient.RuntimeData.ProjectApiKeys[0].ApiKey))
       {
-        request.ProjectApiKey = BeamClient.RuntimeData.ProjectApiKey;
+        request.ProjectApiKey = BeamClient.RuntimeData.ProjectApiKeys[0].ApiKey;
       }
 
       unitInstances.ForEach(this.HandleFulfillmentStartEvent);

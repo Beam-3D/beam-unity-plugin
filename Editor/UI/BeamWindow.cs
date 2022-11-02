@@ -205,6 +205,7 @@ namespace Beam.Editor.UI
               if (!string.IsNullOrWhiteSpace(BeamClient.Data.GetSelectedProject()?.Id))
               {
                 await BeamEditorDataManager.GetAreas(BeamClient.Data.GetSelectedProject().Id);
+                await BeamEditorDataManager.GetProjectApiKeys(BeamClient.Data.GetSelectedProject().Id);
               }
 
               if (!string.IsNullOrWhiteSpace(BeamClient.Data.GetSelectedScene()?.Id))
