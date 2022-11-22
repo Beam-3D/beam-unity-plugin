@@ -127,7 +127,6 @@ namespace Beam.Runtime.Client.Managers
       this.StopAnalytics();
 
       BeamLogger.LogInfo($"Stopping session {BeamClient.CurrentSession?.Id}");
-      await BeamClient.Sdk.Session.StopSessionAsync(BeamClient.CurrentSession?.Id);
     }
     
     public void StopAnalytics()

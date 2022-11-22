@@ -179,8 +179,13 @@ namespace Beam.Runtime.Client
       }
       
       BeamLogger.LogInfo($"Stopping session with ID {CurrentSession.Id}");
-      await Sdk.Session.StopSessionAsync(CurrentSession.Id);
       BeamManagerHandler.GetAnalyticsManager().TrackSessionStop();
+      await Sdk.Session.StopSessionAsync(CurrentSession.Id);
+      CurrentSession = null;
+      if (RuntimeData)
+      {
+        RuntimeData.CurrentSession = null;
+      }
     }
 
     /// <summary>

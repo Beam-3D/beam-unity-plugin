@@ -34,7 +34,9 @@ namespace Beam.Runtime.Client.Units
 
         this.ContentUrlHighQuality = videoUrl;
 
-        this.OnFulfillmentUpdated.Invoke(new VideoUnitFulfillmentData(UnitFulfillmentStatusCode.CompletedWithContent, unit.Id, videoMetadata.Content.Video.Url, billboardUrl));
+        UnitFulfillmentStatusCode statusCode = sameContent ? UnitFulfillmentStatusCode.CompletedWithSameContent : UnitFulfillmentStatusCode.CompletedWithContent;
+
+        this.OnFulfillmentUpdated.Invoke(new VideoUnitFulfillmentData(statusCode, unit.Id, videoMetadata.Content.Video.Url, billboardUrl));
       }
       else if (fulfillment.Metadata == null)
       {
@@ -93,6 +95,5 @@ namespace Beam.Runtime.Client.Units
     {
       return !string.IsNullOrWhiteSpace(this.ContentUrlHighQuality) && string.CompareOrdinal(this.ContentUrlHighQuality, videoMetadata.Content.Video.Url) == 0;
     }
-
   }
 }

@@ -100,6 +100,11 @@ namespace Beam.Editor.UI
       root.AddToClassList("beam-main-view");
       var ss = Resources.Load<StyleSheet>("UI/BeamTheme");
 
+      if (!ss)
+      {
+        return;
+      }
+
       root.styleSheets.Add(ss);
       if (Application.isPlaying)
       {
