@@ -33,7 +33,7 @@ namespace Beam.Runtime.Client.Loaders
     private new void Awake()
     {
       base.Awake();
-      
+
       this.BeamThreeDimensionalUnitInstance.OnLodStatusChanged.AddListener(this.HandleLodChange);
 
       if (this.Placeholder == null)
@@ -151,7 +151,7 @@ namespace Beam.Runtime.Client.Loaders
         gltfAsset = this.lowQualityInstance.AddComponent<GltfAsset>();
       }
 
-      gltfAsset.loadOnStartup = false;
+      gltfAsset.LoadOnStartup = false;
       bool success = await gltfAsset.Load($"{uri}?filename=model.glb");
 
       if (success)

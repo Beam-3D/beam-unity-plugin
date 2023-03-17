@@ -128,8 +128,8 @@ namespace Beam.Editor.Utilities
 
       GameObjectExport export = new GameObjectExport(new ExportSettings
       {
-        format = GltfFormat.Binary,
-        fileConflictResolution = FileConflictResolution.Overwrite
+        Format = GltfFormat.Binary,
+        FileConflictResolution = FileConflictResolution.Overwrite
       });
       export.AddScene(exportableTransforms);
 
