@@ -55,7 +55,7 @@ namespace Beam.Editor.Managers
           case 401:
             // Authentication error or bad token. Clear token and request a new login
             loginResponse.Token = null;
-            FileHelper.SaveLoginData(loginResponse);
+            FileHelper.DeleteLoginData();
             break;
           case 400:
           case 503:
@@ -106,7 +106,7 @@ namespace Beam.Editor.Managers
       FileHelper.DeleteLoginData();
       ServerError = false;
       LoginStatusChanged?.Invoke(null, LoginEventStatus.UserLoggedOut);
-      
+
       // If there's no data then there's nothing to clear.
       if (BeamClient.Data)
       {
