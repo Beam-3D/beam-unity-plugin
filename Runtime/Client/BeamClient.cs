@@ -24,9 +24,10 @@ namespace Beam.Runtime.Client
     public bool CommenceAnalyticsOnSessionStart = false;
     public string[] ExternalIds;
   }
-  
+
   public static class BeamClient
   {
+    private static readonly string[] disallowedHeaders = new string[] { "Content-Type", "Accept" };
     public static BeamSdk Sdk
     {
       get
@@ -52,15 +53,15 @@ namespace Beam.Runtime.Client
     public static readonly List<string> ActiveDynamicTags = new List<string>();
 
     private static BeamSdk beamSdk;
-    
+
     public static ISession CurrentSession
     {
       get { return RuntimeData ? RuntimeData.CurrentSession : null; }
-      set 
-      { 
+      set
+      {
         if (RuntimeData)
         {
-          RuntimeData.CurrentSession = value; 
+          RuntimeData.CurrentSession = value;
         }
       }
     }
@@ -71,8 +72,8 @@ namespace Beam.Runtime.Client
     public static async void StartSession(SessionParameters parameters = null)
     {
       bool hasApiKeys = RuntimeData.ProjectApiKeys.Any() && !string.IsNullOrEmpty(RuntimeData.ProjectApiKeys[0].ApiKey);
-      
-      if (!RuntimeData || (string.IsNullOrWhiteSpace(RuntimeData.ProjectId) && !hasApiKeys));
+
+      if (!RuntimeData || (string.IsNullOrWhiteSpace(RuntimeData.ProjectId) && !hasApiKeys))
       {
         BeamLogger.LogWarning("A ProjectId or ProjectApiKey are usually required to start a session.");
       }
@@ -160,7 +161,7 @@ namespace Beam.Runtime.Client
         BeamLogger.LogInfo($"Analytics set to start on session start.");
         StartAnalytics();
       }
-      
+
       if (RuntimeData.AutoStartFulfillment)
       {
         StartAutomaticFulfillment();
@@ -177,7 +178,7 @@ namespace Beam.Runtime.Client
         BeamLogger.LogError("There is no current running session so it cannot be stopped");
         return;
       }
-      
+
       BeamLogger.LogInfo($"Stopping session with ID {CurrentSession.Id}");
       BeamManagerHandler.GetAnalyticsManager().TrackSessionStop();
       await Sdk.Session.StopSessionAsync(CurrentSession.Id);
@@ -277,7 +278,7 @@ namespace Beam.Runtime.Client
       }
       BeamLogger.LogInfo($"Failed to add dynamic tag \"{tag}\"; tag already exists");
     }
-    
+
     /// <summary>
     /// Removes a dynamic tag from future fulfillment requests
     /// </summary>
@@ -287,10 +288,10 @@ namespace Beam.Runtime.Client
       if (ActiveDynamicTags.Contains(tag))
       {
         ActiveDynamicTags.Remove(tag);
-        BeamLogger.LogInfo($"Dynamic tag \"{tag}\" successfully removed" );
+        BeamLogger.LogInfo($"Dynamic tag \"{tag}\" successfully removed");
         return;
-      } 
-      if(RuntimeData.DynamicTags.Contains(tag))
+      }
+      if (RuntimeData.DynamicTags.Contains(tag))
       {
         BeamLogger.LogInfo($"Failed to remove dynamic tag \"{tag}\"; Tag included in BeamRuntimeData");
         return;
@@ -350,11 +351,11 @@ namespace Beam.Runtime.Client
         BeamLogger.LogError("Session must be started for analytics to run.");
         return;
       }
-      
+
       BeamAnalyticsManager analyticsManager = BeamManagerHandler.GetAnalyticsManager();
       analyticsManager.Init();
     }
-    
+
     public static void StopAnalytics()
     {
       if (CurrentSession == null || string.IsNullOrWhiteSpace(CurrentSession.Id))
@@ -362,9 +363,37 @@ namespace Beam.Runtime.Client
         BeamLogger.LogError("No current session, analytics are not running.");
         return;
       }
-      
+
       BeamAnalyticsManager analyticsManager = BeamManagerHandler.GetAnalyticsManager();
       analyticsManager.StopAnalytics();
+    }
+
+    public static void AddCustomHeader(string key, string value)
+    {
+      if (RuntimeData.CustomRuntimeHeaders.Any(ch => ch.Key == key))
+      {
+        BeamLogger.LogError($"A header with key {key} already exists.");
+        return;
+      }
+
+      if (disallowedHeaders.Contains(key))
+      {
+        BeamLogger.LogError($"Overriding the {key} header is restricted as it will cause issues with Beam API commuincation");
+        return;
+      }
+
+      RuntimeData.CustomRuntimeHeaders.Add(new Model.CustomHeader { Key = key, Value = value });
+    }
+
+    public static void RemoveCustomHeader(string key)
+    {
+      if (!RuntimeData.CustomRuntimeHeaders.Any(ch => ch.Key == key))
+      {
+        BeamLogger.LogError($"No header with key {key} exists.");
+        return;
+      }
+
+      RuntimeData.CustomRuntimeHeaders.Remove(RuntimeData.CustomRuntimeHeaders.FirstOrDefault(ch => ch.Key == key));
     }
   }
 }
